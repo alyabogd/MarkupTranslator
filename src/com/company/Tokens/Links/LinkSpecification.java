@@ -18,4 +18,9 @@ public class LinkSpecification extends Token {
     public String getAdress() {
         return adress;
     }
+
+    @Override
+    public String toString() {
+        return "{ LinkSpecifiation for id " + id + " : " + adress + "} ";
+    }
 }

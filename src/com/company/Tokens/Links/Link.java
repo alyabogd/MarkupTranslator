@@ -58,4 +58,15 @@ public class Link extends Token {
             return link;
         }
     } //LinkFactory
+
+    @Override
+    public String toString() {
+        String s =  "{ Link: " + text + " ";
+        if (src == null){
+            s += "[id " + id + "]} ";
+        } else {
+            s += "[src " + src + "]} ";
+        }
+        return s;
+    }
 }

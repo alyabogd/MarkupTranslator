@@ -57,4 +57,15 @@ public class Image extends Token{
             return createReferencedImage("", id);
         }
     }
+
+    @Override
+    public String toString() {
+        String s =  "{ Image: alttext - " + altText + "; ";
+        if (src == null){
+            s += "[id " + id + "]} ";
+        } else {
+            s += "[src " + src + "]} ";
+        }
+        return s;
+    }
 }

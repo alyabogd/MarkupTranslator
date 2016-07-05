@@ -8,7 +8,7 @@ import java.util.List;
 
 public class MarkupList extends Token implements Iterable<ListElement> {
 
-    enum Types {
+    public enum Types {
         ORDRED,
         NON_ORDERED
     }
@@ -33,4 +33,14 @@ public class MarkupList extends Token implements Iterable<ListElement> {
         return elements.iterator();
     }
 
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("{ List ").append(type).append(" : ");
+        for (ListElement le: elements) {
+            sb.append("\n").append("    ").append(le.toString());
+        }
+        sb.append(" }");
+        return sb.toString();
+    }
 }

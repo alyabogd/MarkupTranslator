@@ -32,4 +32,9 @@ public class ListElement {
     public List<Token> getDescription() {
         return description;
     }
+
+    @Override
+    public String toString() {
+        return title + "(" + description + ")  ";
+    }
 }

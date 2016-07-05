@@ -1,7 +1,7 @@
 package com.company.Tokens;
 
 public class Text extends Token {
-    enum Properties {
+    public enum Properties {
         ITALIC,
         BOLD,
         HEADER_ONE,
@@ -21,6 +21,7 @@ public class Text extends Token {
 
     public void setState(Properties property, boolean value){
         state[property.ordinal()] = value;
+        //TODO validate input i.e. text cannot be both HEADING_ONE and HEADING_THREE
     }
 
     public boolean[] getState(){
@@ -29,5 +30,18 @@ public class Text extends Token {
 
     public String getWording(){
         return wording;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("{Text : ");
+        for(int i = 0; i < Properties.values().length; i++){
+            if (state[i]){
+                sb.append(Properties.values()[i]);
+            }
+        }
+        sb.append(" \" ").append(wording).append(" \" }");
+        return sb.toString();
     }
 }

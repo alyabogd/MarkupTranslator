@@ -22,4 +22,13 @@ public class Dom implements Iterable<Token> {
     public Iterator<Token> iterator() {
         return tokens.iterator();
     }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        for (Token t: tokens) {
+            sb.append(t.toString()).append("\n");
+        }
+        return sb.toString();
+    }
 }

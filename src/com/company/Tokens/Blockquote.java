@@ -13,14 +13,23 @@ public class Blockquote extends Token implements Iterable<Token> {
         return tokens;
     }
 
-    public void addToken(Token t) throws RecursiveBlockquoteException {
-        if (t instanceof Blockquote)
-            throw new RecursiveBlockquoteException("Unable to hold blockquote in blockquote");
+    public void addToken(Token t) {
         tokens.add(t);
     }
 
     @Override
     public Iterator<Token> iterator() {
         return tokens.iterator();
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("{start blackquote: \n");
+        for (Token t: tokens){
+            sb.append("    ").append(t.toString()).append("\n");
+        }
+        sb.append("end blockquote} ");
+        return sb.toString();
     }
 }
