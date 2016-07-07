@@ -1,5 +1,6 @@
 package com.company;
 
+import com.company.Tokens.Image;
 import com.company.Tokens.Links.Link;
 import com.company.Tokens.Text;
 import com.sun.istack.internal.Nullable;
@@ -15,6 +16,8 @@ public class MarkdownReader {
     private static final Pattern HEADINGS_PATTERN = Pattern.compile("^(#{1,6})\\w+");
     private static final Pattern INLINE_LINK_PATTERN = Pattern.compile("\\[([^\\]]+)\\]\\(([^\\)]*)\\)");
     private static final Pattern REFERENCED_LINK_PATTERN = Pattern.compile("\\[([^\\]]+)\\]\\[([^\\)]*)\\]");
+    private static final Pattern INLINE_IMAGE_PATTERN = Pattern.compile("!\\[([^\\]]*)\\]\\(([^\\)]*)\\)");
+    private static final Pattern REFERENCED_IMAGE_PATTERN = Pattern.compile("!\\[([^\\]]*)\\]\\[([^\\)]*)\\]");
 
     private BufferedReader reader;
 
@@ -135,6 +138,22 @@ public class MarkdownReader {
             final String activeText = referencedMatcher.group(1);
             final String id = referencedMatcher.group(2);
             return Link.LinkFactory.createReferencedLink(makeText(activeText), id);
+        }
+        return null;
+    }
+
+    private Image makeImage(String line){
+        final Matcher inlineMatcher = INLINE_IMAGE_PATTERN.matcher(line);
+        final Matcher referencedMatcher = REFERENCED_IMAGE_PATTERN.matcher(line);
+        if (inlineMatcher.find()){
+            final String altText = inlineMatcher.group(1);
+            final String src = inlineMatcher.group(2);
+            return Image.ImageFactory.createImage(altText, src);
+        }
+        if (referencedMatcher.find()){
+            final String altText = inlineMatcher.group(1);
+            final String id = inlineMatcher.group(2);
+            return Image.ImageFactory.createReferencedImage(altText, id);
         }
         return null;
     }
