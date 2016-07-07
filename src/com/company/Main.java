@@ -36,11 +36,10 @@ public class Main {
         String s = "#heaing one with *italics* and _another italics_ and **bold** and " +
                 "__another bold__ ";
         String difficult = "###heading three with _**one**_ and __*two*__";
+        String tryingLinks = "[this *is* __a__ link](www.website.com";
 
         try {
             MarkdownReader markdownReader = new MarkdownReader("input.md");
-            List<Text> list = markdownReader.makeText(difficult);
-            System.out.println(list.toString());
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }

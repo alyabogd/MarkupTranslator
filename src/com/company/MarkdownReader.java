@@ -1,7 +1,8 @@
 package com.company;
 
-import com.company.Tokens.Paragraph;
+import com.company.Tokens.Links.Link;
 import com.company.Tokens.Text;
+import com.sun.istack.internal.Nullable;
 
 import java.io.*;
 import java.util.LinkedList;
@@ -12,6 +13,8 @@ import java.util.regex.Pattern;
 public class MarkdownReader {
 
     private static final Pattern HEADINGS_PATTERN = Pattern.compile("^(#{1,6})\\w+");
+    private static final Pattern INLINE_LINK_PATTERN = Pattern.compile("\\[([^\\]]+)\\]\\(([^\\)]*)\\)");
+    private static final Pattern REFERENCED_LINK_PATTERN = Pattern.compile("\\[([^\\]]+)\\]\\[([^\\)]*)\\]");
 
     private BufferedReader reader;
 
@@ -34,13 +37,13 @@ public class MarkdownReader {
         return dom;
     }
 
-    public List<Text> makeText(String line) {
+    private  List<Text> makeText(String line) {
         List<Text> paragraph = new LinkedList<>();
         if (line == null || line.length() == 0)
             return paragraph;
         int ifHeading = 0; //0 - for non-heading// 1-6 for corresponding headers
         int pointer = 0;
-        Matcher m = HEADINGS_PATTERN.matcher(line);
+        final Matcher m = HEADINGS_PATTERN.matcher(line);
         if (m.lookingAt()) {
             ifHeading = m.group(1).length();
             pointer = m.end(1);
@@ -51,8 +54,6 @@ public class MarkdownReader {
         char openBold = '0';
 
         do {
-            StringBuffer sb = new StringBuffer();
-
             //pointer now is on * or _ or neither. i should check for italics or bold opening or closing
             if (pointer < line.length() && line.charAt(pointer) == '*') {
                 if (pointer + 1 < line.length() && line.charAt(pointer + 1) == '*') { //BOLD case '**'
@@ -93,9 +94,8 @@ public class MarkdownReader {
                     pointer++;
                 }
             }
-
-
             ////
+            final StringBuffer sb = new StringBuffer();
             while (pointer < line.length() && line.charAt(pointer) != '*' && line.charAt(pointer) != '_') {
                 sb.append(line.charAt(pointer));
                 pointer++; //TODO i think there is a better way to copy text until special symbol rather than do it by char
@@ -120,6 +120,23 @@ public class MarkdownReader {
         }
 
         return paragraph;
+    }
+
+    @Nullable
+    private Link makeLink(String line) {
+        final Matcher inlineMatcher = INLINE_LINK_PATTERN.matcher(line);
+        final Matcher referencedMatcher = REFERENCED_LINK_PATTERN.matcher(line);
+        if (inlineMatcher.find()) {
+            final String activeText = inlineMatcher.group(1);
+            final String website = inlineMatcher.group(2);
+            return Link.LinkFactory.createLink(makeText(activeText), website);
+        }
+        if (referencedMatcher.find()) {
+            final String activeText = referencedMatcher.group(1);
+            final String id = referencedMatcher.group(2);
+            return Link.LinkFactory.createReferencedLink(makeText(activeText), id);
+        }
+        return null;
     }
 
 
