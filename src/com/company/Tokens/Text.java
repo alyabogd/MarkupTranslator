@@ -18,8 +18,6 @@ public class Text extends Token {
     private String wording;
     private boolean[] state = new boolean[Properties.values().length];
 
-    public Text(){}
-
     public Text(String wording){
         this.wording = wording;
     }

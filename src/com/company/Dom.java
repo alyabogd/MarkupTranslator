@@ -4,11 +4,12 @@ import com.company.Tokens.Token;
 
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 
 public class Dom implements Iterable<Token> {
 
-    private List<Token> tokens = new ArrayList<>();
+    private List<Token> tokens = new LinkedList<>();
 
     public List<Token> getTokens() {
         return tokens;

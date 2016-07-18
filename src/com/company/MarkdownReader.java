@@ -51,6 +51,10 @@ public class MarkdownReader {
         return dom;
     }
 
+    public Token traverseString(String line){
+
+    }
+
     private  List<Text> makeText(String line) {
         List<Text> paragraph = new LinkedList<>();
         if (line == null || line.length() == 0)

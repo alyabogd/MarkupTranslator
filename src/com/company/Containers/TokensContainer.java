@@ -1,16 +1,20 @@
-package com.company.Tokens;
+package com.company.Containers;
 
-import java.util.ArrayList;
+import com.company.Tokens.Token;
+
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 
-public class Paragraph extends Token implements Iterable<Token>{
+public abstract class TokensContainer implements Iterable<Token> {
+    protected List<Token> tokens = new LinkedList<>();
 
-    private List<Token> tokens = new ArrayList<>();
+    public List<Token> getTokens() {
+        return tokens;
+    }
 
     public void addToken(Token t){
         tokens.add(t);
-        //TODO validate input
     }
 
     @Override
@@ -21,10 +25,9 @@ public class Paragraph extends Token implements Iterable<Token>{
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        for (Token t: tokens) {
+        for (Token t : tokens) {
             sb.append(t.toString());
         }
-        sb.append("\n");
         return sb.toString();
     }
 }

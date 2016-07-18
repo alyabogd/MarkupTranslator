@@ -37,34 +37,38 @@ public class Link extends Token {
     }
 
     public static class LinkFactory {
-        public static Link createLink(List<Text> text, String src) {
+        public static Link createLink(List<Text> text, String src, int begin, int end) {
             Link link = new Link();
             link.text = text;
             link.src = src;
+            link.begin = begin;
+            link.end = end;
             return link;
         }
 
-        public static Link createLink(Text text, String src){
-            return LinkFactory.createLink(Collections.singletonList(text), src);
+        public static Link createLink(Text text, String src, int begin, int end){
+            return LinkFactory.createLink(Collections.singletonList(text), src, begin, end);
         }
 
-        public static Link createLink(String wording, String src) {
-            return LinkFactory.createLink(new Text(wording), src);
+        public static Link createLink(String wording, String src, int begin, int end) {
+            return LinkFactory.createLink(new Text(wording), src, begin, end);
         }
 
-        public static Link createReferencedLink(List<Text> text, String id){
+        public static Link createReferencedLink(List<Text> text, String id, int begin, int end){
             Link link = new Link();
             link.text = text;
             link.id = id;
+            link.begin = begin;
+            link.end = end;
             return link;
         }
 
-        public static Link createReferencedLink(Text text, String id) {
-            return LinkFactory.createReferencedLink(Collections.singletonList(text), id);
+        public static Link createReferencedLink(Text text, String id, int begin, int end) {
+            return LinkFactory.createReferencedLink(Collections.singletonList(text), id, begin, end);
         }
 
-        public static Link createReferencedLink(String wording, String id) {
-            return LinkFactory.createReferencedLink(new Text(wording), id);
+        public static Link createReferencedLink(String wording, String id, int begin, int end) {
+            return LinkFactory.createReferencedLink(new Text(wording), id, begin, end);
         }
     } //LinkFactory
 
