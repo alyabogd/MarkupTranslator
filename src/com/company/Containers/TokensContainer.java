@@ -2,6 +2,7 @@ package com.company.Containers;
 
 import com.company.Tokens.Token;
 
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -15,6 +16,14 @@ public abstract class TokensContainer implements Iterable<Token> {
 
     public void addToken(Token t){
         tokens.add(t);
+    }
+
+    public void addToken(List<? extends Token> t){
+        tokens.addAll(t);
+    }
+
+    public void sort(){
+        Collections.sort(tokens);
     }
 
     @Override

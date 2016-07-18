@@ -1,5 +1,6 @@
 package com.company.Tokens.Links;
 
+import com.company.Tokens.Phrase;
 import com.company.Tokens.Text;
 import com.company.Tokens.Token;
 import com.sun.istack.internal.Nullable;
@@ -10,7 +11,7 @@ import java.util.List;
 
 public class Link extends Token {
 
-    private List<Text> text;
+    private Phrase text;
     private String src;
     private String id; //in case one is a referenced link
 
@@ -27,7 +28,7 @@ public class Link extends Token {
         return src;
     }
 
-    public List<Text> getText() {
+    public Phrase getText() {
         return text;
     }
 
@@ -37,7 +38,7 @@ public class Link extends Token {
     }
 
     public static class LinkFactory {
-        public static Link createLink(List<Text> text, String src, int begin, int end) {
+        public static Link createLink(Phrase text, String src, int begin, int end) {
             Link link = new Link();
             link.text = text;
             link.src = src;
@@ -47,14 +48,14 @@ public class Link extends Token {
         }
 
         public static Link createLink(Text text, String src, int begin, int end){
-            return LinkFactory.createLink(Collections.singletonList(text), src, begin, end);
+            return LinkFactory.createLink(new Phrase(Collections.singletonList(text)), src, begin, end);
         }
 
         public static Link createLink(String wording, String src, int begin, int end) {
             return LinkFactory.createLink(new Text(wording), src, begin, end);
         }
 
-        public static Link createReferencedLink(List<Text> text, String id, int begin, int end){
+        public static Link createReferencedLink(Phrase text, String id, int begin, int end){
             Link link = new Link();
             link.text = text;
             link.id = id;
@@ -64,7 +65,7 @@ public class Link extends Token {
         }
 
         public static Link createReferencedLink(Text text, String id, int begin, int end) {
-            return LinkFactory.createReferencedLink(Collections.singletonList(text), id, begin, end);
+            return LinkFactory.createReferencedLink(new Phrase(Collections.singletonList(text)), id, begin, end);
         }
 
         public static Link createReferencedLink(String wording, String id, int begin, int end) {

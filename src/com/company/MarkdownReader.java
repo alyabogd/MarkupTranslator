@@ -1,13 +1,18 @@
 package com.company;
 
+import com.company.Containers.Blockquote;
+import com.company.Containers.Paragraph;
+import com.company.Containers.TokensContainer;
 import com.company.Tokens.Image;
 import com.company.Tokens.Links.Link;
 import com.company.Tokens.Links.LinkSpecification;
+import com.company.Tokens.Phrase;
 import com.company.Tokens.Text;
 import com.company.Tokens.Token;
 import com.sun.istack.internal.Nullable;
 
 import java.io.*;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -40,8 +45,8 @@ public class MarkdownReader {
         Dom dom = new Dom();
         String s;
         try {
-            while((s = reader.readLine()) != null){
-                System.out.println(s);
+            while ((s = reader.readLine()) != null) {
+                TokensContainer tc = traverseString(s);
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -51,21 +56,127 @@ public class MarkdownReader {
         return dom;
     }
 
-    public Token traverseString(String line){
+    public TokensContainer traverseString(String line) {
+        TokensContainer container;
+        if (line.startsWith(">")) {
+            container = new Blockquote();
+        } else {
+            container = new Paragraph();
+        }
 
-    }
+        final Matcher inlineLinkMatcher = INLINE_LINK_PATTERN.matcher(line);
+        final Matcher referencedLinkMatcher = REFERENCED_LINK_PATTERN.matcher(line);
+        final Matcher linkSpecificationMatcher = LINK_SPECIFICATION_PATTERN.matcher(line);
+        final Matcher inlineImageMatcher = INLINE_IMAGE_PATTERN.matcher(line);
+        final Matcher referencedImageMatcher = REFERENCED_IMAGE_PATTERN.matcher(line);
 
-    private  List<Text> makeText(String line) {
-        List<Text> paragraph = new LinkedList<>();
-        if (line == null || line.length() == 0)
-            return paragraph;
+        while (inlineLinkMatcher.find()) {
+            if (inlineLinkMatcher.start() > 0 && line.charAt(inlineLinkMatcher.start() - 1) == '!') {
+                continue;
+            }
+            final Phrase activeText = makeText(inlineLinkMatcher.group(1),
+                    inlineLinkMatcher.start(1), inlineLinkMatcher.end(1));
+            final String website = inlineLinkMatcher.group(2);
+            container.addToken(Link.LinkFactory.createLink(activeText, website,
+                    inlineLinkMatcher.start(), inlineLinkMatcher.end()));
+        }
+        while (referencedLinkMatcher.find()) {
+            if (referencedLinkMatcher.start() > 0 && line.charAt(referencedLinkMatcher.start() - 1) == '!') {
+                continue;
+            }
+            final Phrase activeText = makeText(referencedLinkMatcher.group(1),
+                    referencedLinkMatcher.start(1), referencedLinkMatcher.end(1));
+            final String id = referencedLinkMatcher.group(2);
+            container.addToken(Link.LinkFactory.createReferencedLink(activeText, id,
+                    referencedLinkMatcher.start(), referencedLinkMatcher.end()));
+        }
+        while (linkSpecificationMatcher.find()) {
+            final String id = linkSpecificationMatcher.group(1);
+            final String src = linkSpecificationMatcher.group(2);
+            LinkSpecification ls = new LinkSpecification(id, src,
+                    linkSpecificationMatcher.start(), linkSpecificationMatcher.end());
+            container.addToken(ls);
+            for (Token t : container) {
+                if (t instanceof Link && ((Link) t).getId().equals(ls.getId())) {
+                    ((Link) t).setSrc(ls);
+                    break;
+                }
+                if (t instanceof Image && ((Image) t).getId().equals(ls.getId())) {
+                    ((Image) t).setSrc(ls);
+                    break;
+                }
+            }
+        }
+        while (inlineImageMatcher.find()) {
+            final Phrase altText = makeText(inlineImageMatcher.group(1),
+                    inlineImageMatcher.start(1), inlineImageMatcher.end(1));
+            final String src = inlineImageMatcher.group(2);
+            container.addToken(Image.ImageFactory.createImage(altText, src,
+                    inlineImageMatcher.start(), inlineImageMatcher.end()));
+        }
+        while (referencedImageMatcher.find()) {
+            final Phrase altText = makeText(referencedImageMatcher.group(1),
+                    referencedImageMatcher.start(1), referencedImageMatcher.end(1));
+            final String id = referencedImageMatcher.group(2);
+            container.addToken(Image.ImageFactory.createReferencedImage(altText, id,
+                    referencedImageMatcher.start(), referencedImageMatcher.end()));
+        }
+        container.sort();
+
+
         int ifHeading = 0; //0 - for non-heading// 1-6 for corresponding headers
-        int pointer = 0;
         final Matcher m = HEADINGS_PATTERN.matcher(line);
         if (m.lookingAt()) {
             ifHeading = m.group(1).length();
-            pointer = m.end(1);
         }
+
+
+        List<Phrase> phrases = new LinkedList<>();
+        for (int i = 1; i < container.getTokens().size(); i++) {
+            final Phrase p = makeText(line.substring(container.getTokens().get(i - 1).getEnd(),
+                    container.getTokens().get(i).getBegin()), container.getTokens().get(i - 1).getEnd(),
+                    container.getTokens().get(i).getBegin());
+            p.setHeader(ifHeading);
+            if (!p.isEmpty()) {
+                phrases.add(p);
+
+            }
+        }
+        if (container.getTokens().get(0).getBegin() != 0) { //first is exist
+            final Phrase t = makeText(line.substring(ifHeading, container.getTokens().get(0).getBegin()),
+                    ifHeading, container.getTokens().get(0).getBegin());
+            t.setHeader(ifHeading);
+            phrases.add(t);
+        }
+
+        if (container.getTokens().get(container.getTokens().size() - 1).getEnd() < line.length()) { //last is exist
+            final Phrase t = makeText(
+                    line.substring(container.getTokens().get(container.getTokens().size() - 1).getEnd(),
+                            line.length()), container.getTokens().get(container.getTokens().size() - 1).getEnd(),
+                    line.length());
+            t.setHeader(ifHeading);
+            phrases.add(t);
+        }
+
+        container.addToken(phrases);
+        container.sort();
+        for (Token t : container) {
+            System.out.println(t.getBegin() + " - " + t.getEnd() + " " + t.toString());
+        }
+        System.out.println();
+        /*for (Phrase t : phrases) {
+            System.out.println(t.getBegin() + " - " + t.getEnd() + " " + t.toString());
+        }*/
+        return container;
+    }
+
+
+    private Phrase makeText(String line, int begin, int end) {
+        Phrase phrase = new Phrase(begin, end);
+        if (line == null || line.length() == 0)
+            return phrase;
+        int pointer = 0;
+
         boolean isItalics = false;
         char openItalics = '0';
         boolean isBold = false;
@@ -120,16 +231,13 @@ public class MarkdownReader {
             }
             if (sb.length() > 0) {
                 final Text currentText = new Text(sb.toString());
-                if (ifHeading != 0) {
-                    currentText.setState(Text.Properties.values()[ifHeading], true);
-                }
                 if (isBold) {
                     currentText.setState(Text.Properties.BOLD, true);
                 }
                 if (isItalics) {
                     currentText.setState(Text.Properties.ITALIC, true);
                 }
-                paragraph.add(currentText);
+                phrase.addText(currentText);
             }
         } while (pointer < line.length());
 
@@ -137,52 +245,7 @@ public class MarkdownReader {
             //TODO throw new NotClosedException
         }
 
-        return paragraph;
-    }
-
-    @Nullable
-    private Link makeLink(String line) {
-        final Matcher inlineMatcher = INLINE_LINK_PATTERN.matcher(line);
-        final Matcher referencedMatcher = REFERENCED_LINK_PATTERN.matcher(line);
-        if (inlineMatcher.find()) {
-            final String activeText = inlineMatcher.group(1);
-            final String website = inlineMatcher.group(2);
-            return Link.LinkFactory.createLink(makeText(activeText), website);
-        }
-        if (referencedMatcher.find()) {
-            final String activeText = referencedMatcher.group(1);
-            final String id = referencedMatcher.group(2);
-            return Link.LinkFactory.createReferencedLink(makeText(activeText), id);
-        }
-        return null;
-    }
-
-    @Nullable
-    private Image makeImage(String line){
-        final Matcher inlineMatcher = INLINE_IMAGE_PATTERN.matcher(line);
-        final Matcher referencedMatcher = REFERENCED_IMAGE_PATTERN.matcher(line);
-        if (inlineMatcher.find()){
-            final String altText = inlineMatcher.group(1);
-            final String src = inlineMatcher.group(2);
-            return Image.ImageFactory.createImage(altText, src);
-        }
-        if (referencedMatcher.find()){
-            final String altText = inlineMatcher.group(1);
-            final String id = inlineMatcher.group(2);
-            return Image.ImageFactory.createReferencedImage(altText, id);
-        }
-        return null;
-    }
-
-    @Nullable
-    private LinkSpecification makeLinkSpecificatinon(String line){
-        final Matcher linkSpecificationMatcher = LINK_SPECIFICATION_PATTERN.matcher(line);
-        if (linkSpecificationMatcher.find()){
-            final String id = linkSpecificationMatcher.group(1);
-            final  String src = linkSpecificationMatcher.group(2);
-            return new LinkSpecification(id, src);
-        }
-        return null;
+        return phrase;
     }
 
 
