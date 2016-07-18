@@ -1,4 +1,4 @@
-package com.company.Tokens;
+package com.company;
 
 import com.sun.istack.internal.Nullable;
 

@@ -1,5 +1,6 @@
 package com.company.Tokens;
 
+import com.company.Text;
 import com.company.Tokens.Links.LinkSpecification;
 import com.sun.istack.internal.Nullable;
 

@@ -1,13 +1,11 @@
 package com.company.Tokens.Links;
 
 import com.company.Tokens.Phrase;
-import com.company.Tokens.Text;
+import com.company.Text;
 import com.company.Tokens.Token;
 import com.sun.istack.internal.Nullable;
 
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.List;
 
 public class Link extends Token {
 

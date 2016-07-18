@@ -1,6 +1,6 @@
 package com.company.Tokens.List;
 
-import com.company.Tokens.Text;
+import com.company.Text;
 import com.company.Tokens.Token;
 import com.sun.istack.internal.Nullable;
 

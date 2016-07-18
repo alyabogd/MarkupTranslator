@@ -2,13 +2,10 @@ package com.company.Containers;
 
 import com.company.Tokens.Token;
 
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 public abstract class TokensContainer implements Iterable<Token> {
-    protected List<Token> tokens = new LinkedList<>();
+    protected List<Token> tokens = new ArrayList<>();
 
     public List<Token> getTokens() {
         return tokens;

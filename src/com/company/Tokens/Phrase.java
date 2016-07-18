@@ -1,15 +1,14 @@
 package com.company.Tokens;
 
 
+import com.company.Text;
+
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
 public class Phrase extends Token implements Iterable<Text> {
     private List<Text> phrase = new LinkedList<>();
-
-    private int begin;
-    private int end;
 
     public Phrase(List<Text> l){
         phrase = l;
@@ -58,16 +57,6 @@ public class Phrase extends Token implements Iterable<Text> {
 
     public boolean isEmpty() {
         return phrase.isEmpty();
-    }
-
-    @Override
-    public int getBegin() {
-        return begin;
-    }
-
-    @Override
-    public int getEnd() {
-        return end;
     }
 
     @Override
