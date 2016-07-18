@@ -1,33 +1,32 @@
 package com.company;
 
-import com.company.Tokens.Token;
+import com.company.Containers.TokensContainer;
 
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
-public class Dom implements Iterable<Token> {
+public class Dom implements Iterable<TokensContainer> {
 
-    private List<Token> tokens = new LinkedList<>();
+    private List<TokensContainer> containers = new LinkedList<>();
 
-    public List<Token> getTokens() {
-        return tokens;
+    public List<TokensContainer> getContainers() {
+        return containers;
     }
 
-    public void addToken(Token t){
-        tokens.add(t);
+    public void addContainer(TokensContainer t){
+        containers.add(t);
     }
 
     @Override
-    public Iterator<Token> iterator() {
-        return tokens.iterator();
+    public Iterator<TokensContainer> iterator() {
+        return containers.iterator();
     }
 
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        for (Token t: tokens) {
+        for (TokensContainer t: containers) {
             sb.append(t.toString()).append("\n");
         }
         return sb.toString();
