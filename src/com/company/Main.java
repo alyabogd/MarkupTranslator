@@ -29,10 +29,6 @@ public class Main {
             e.printStackTrace();
         }*/
 
-        /*Pattern HEADINGS_PATTENR = Pattern.compile("^#{1,6}\\w+");
-        Matcher m = HEADINGS_PATTENR.matcher("#heading one");
-        System.out.println(m.lookingAt());*/
-
         String s = "#heaing one with *italics* and _another italics_ and **bold** and " +
                 "__another bold__ ";
         String difficult = "###heading three with _**one**_ and __*two*__";
@@ -40,6 +36,7 @@ public class Main {
 
         try {
             MarkdownReader markdownReader = new MarkdownReader("input.md");
+            markdownReader.makeDom();
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }

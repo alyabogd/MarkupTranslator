@@ -2,7 +2,9 @@ package com.company;
 
 import com.company.Tokens.Image;
 import com.company.Tokens.Links.Link;
+import com.company.Tokens.Links.LinkSpecification;
 import com.company.Tokens.Text;
+import com.company.Tokens.Token;
 import com.sun.istack.internal.Nullable;
 
 import java.io.*;
@@ -18,6 +20,7 @@ public class MarkdownReader {
     private static final Pattern REFERENCED_LINK_PATTERN = Pattern.compile("\\[([^\\]]+)\\]\\[([^\\)]*)\\]");
     private static final Pattern INLINE_IMAGE_PATTERN = Pattern.compile("!\\[([^\\]]*)\\]\\(([^\\)]*)\\)");
     private static final Pattern REFERENCED_IMAGE_PATTERN = Pattern.compile("!\\[([^\\]]*)\\]\\[([^\\)]*)\\]");
+    private static final Pattern LINK_SPECIFICATION_PATTERN = Pattern.compile("\\[([^\\]]+)\\]:\\s?(.+)");
 
     private BufferedReader reader;
 
@@ -35,6 +38,14 @@ public class MarkdownReader {
 
     public Dom makeDom() {
         Dom dom = new Dom();
+        String s;
+        try {
+            while((s = reader.readLine()) != null){
+                System.out.println(s);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
 
         return dom;
@@ -142,6 +153,7 @@ public class MarkdownReader {
         return null;
     }
 
+    @Nullable
     private Image makeImage(String line){
         final Matcher inlineMatcher = INLINE_IMAGE_PATTERN.matcher(line);
         final Matcher referencedMatcher = REFERENCED_IMAGE_PATTERN.matcher(line);
@@ -154,6 +166,17 @@ public class MarkdownReader {
             final String altText = inlineMatcher.group(1);
             final String id = inlineMatcher.group(2);
             return Image.ImageFactory.createReferencedImage(altText, id);
+        }
+        return null;
+    }
+
+    @Nullable
+    private LinkSpecification makeLinkSpecificatinon(String line){
+        final Matcher linkSpecificationMatcher = LINK_SPECIFICATION_PATTERN.matcher(line);
+        if (linkSpecificationMatcher.find()){
+            final String id = linkSpecificationMatcher.group(1);
+            final  String src = linkSpecificationMatcher.group(2);
+            return new LinkSpecification(id, src);
         }
         return null;
     }
