@@ -32,7 +32,7 @@ public abstract class TokensContainer implements Iterable<Token> {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         for (Token t : tokens) {
-            sb.append(t.toString());
+            sb.append(t.getBegin()).append(" - ").append(t.getEnd()).append(" ").append(t.toString()).append("\n");
         }
         return sb.toString();
     }

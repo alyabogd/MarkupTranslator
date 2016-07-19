@@ -1,24 +1,18 @@
 package com.company.Tokens;
 
 import com.company.Containers.TokensContainer;
-import com.company.Text;
+import com.sun.istack.internal.Nullable;
+
 
 public class ListElement extends Token {
-    private Phrase title;
+    private TokensContainer title;
     private TokensContainer description;
 
-    public ListElement(String wording){
-        this.title = new Phrase(new Text(wording));
+    public ListElement(TokensContainer tc) {
+        this.title = tc;
     }
 
-    public ListElement(Text t){
-        this.title = new Phrase(t);
-    }
-
-    public ListElement(Phrase title) {
-        this.title = title;
-    }
-
+    @Nullable
     public TokensContainer getDescription() {
         return description;
     }
@@ -27,12 +21,12 @@ public class ListElement extends Token {
         this.description = description;
     }
 
-    public Phrase getTitle() {
+    public TokensContainer getTitle() {
         return title;
     }
 
     @Override
     public String toString() {
-        return title.toString();
+        return title.toString() + "\n    description: " + description.toString();
     }
 }

@@ -1,11 +1,13 @@
 package com.company;
 
 import com.company.Containers.Blockquote;
+import com.company.Containers.MarkupList;
 import com.company.Containers.Paragraph;
 import com.company.Containers.TokensContainer;
 import com.company.Tokens.Image;
 import com.company.Tokens.Links.Link;
 import com.company.Tokens.Links.LinkSpecification;
+import com.company.Tokens.ListElement;
 import com.company.Tokens.Phrase;
 import com.company.Tokens.Token;
 
@@ -22,8 +24,10 @@ public class MarkdownReader {
     private static final Pattern REFERENCED_LINK_PATTERN = Pattern.compile("\\[([^\\]]+)\\]\\[([^\\)]*)\\]");
     private static final Pattern INLINE_IMAGE_PATTERN = Pattern.compile("!\\[([^\\]]*)\\]\\(([^\\)]*)\\)");
     private static final Pattern REFERENCED_IMAGE_PATTERN = Pattern.compile("!\\[([^\\]]*)\\]\\[([^\\)]*)\\]");
-    private static final Pattern LINK_SPECIFICATION_PATTERN = Pattern.compile("\\[([^\\]]+)\\]:\\s?(.+)");
+    private static final Pattern LINK_SPECIFICATION_PATTERN = Pattern.compile("\\s*\\[([^\\]]+)\\]:\\s?(.+)");
     private static final Pattern NON_ORDERED_LIST_ELEMENT_PATTERN = Pattern.compile("\\s*\\*\\s+([^\\*]+)");
+    private static final Pattern ORDERED_LIST_ELEMENT_PATTERN = Pattern.compile("\\s*\\d{1,3}\\.\\s+([^\\*]+)");
+    private static final Pattern BLACKQUOTE_PATTERN = Pattern.compile("\\s+>\\s*(.*)");
 
     private BufferedReader reader;
 
@@ -44,14 +48,47 @@ public class MarkdownReader {
         String s;
         try {
             while ((s = reader.readLine()) != null) {
+                final Matcher NonOrderedListMatcher = NON_ORDERED_LIST_ELEMENT_PATTERN.matcher(s);
+                final Matcher OrderedListMatcher = ORDERED_LIST_ELEMENT_PATTERN.matcher(s);
+                if (NonOrderedListMatcher.matches()) {
+                    if (!(dom.getLastElement() instanceof MarkupList)) {
+                        dom.addContainer(new MarkupList(MarkupList.Types.NON_ORDERED));
+                    }
+                    if (dom.getLastElement() instanceof MarkupList &&
+                            ((MarkupList) dom.getLastElement()).getType() != MarkupList.Types.NON_ORDERED) {
+                        dom.addContainer(new MarkupList(MarkupList.Types.NON_ORDERED));
+                    }
+                    final ListElement le = new ListElement(traverseString(NonOrderedListMatcher.group(1)));
+                    dom.getLastElement().addToken(le);
+                    continue;
+                }
+
+                if (OrderedListMatcher.matches()) {
+                    if (!(dom.getLastElement() instanceof MarkupList)) {
+                        dom.addContainer(new MarkupList(MarkupList.Types.ORDRED));
+                    }
+                    if (dom.getLastElement() instanceof MarkupList &&
+                            ((MarkupList) dom.getLastElement()).getType() != MarkupList.Types.ORDRED) {
+                        dom.addContainer(new MarkupList(MarkupList.Types.ORDRED));
+                    }
+                    final ListElement le = new ListElement(traverseString(OrderedListMatcher.group(1)));
+                    dom.getLastElement().addToken(le);
+                    continue;
+                }
+
                 final TokensContainer tc = traverseString(s);
-                if (tc.getTokens().get(0) instanceof LinkSpecification) {
+                if (!tc.getTokens().isEmpty() &&  tc.getTokens().get(0) instanceof LinkSpecification) {
                     final LinkSpecification ls = (LinkSpecification) tc.getTokens().get(0);
                     applyLinkSpecifiction(ls, dom);
-
-                } else {
-                    dom.addContainer(tc);
+                    continue;
                 }
+                if (dom.getLastElement() instanceof MarkupList){
+                    if (((MarkupList) dom.getLastElement()).getLastListElement().getDescription() == null){
+                        ((MarkupList) dom.getLastElement()).getLastListElement().setDescription(tc);
+                        continue;
+                    }
+                }
+                dom.addContainer(tc);
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -62,11 +99,11 @@ public class MarkdownReader {
     public void applyLinkSpecifiction(LinkSpecification ls, Dom currentDom) {
         for (TokensContainer container : currentDom) {
             for (Token t : container) {
-                if (t instanceof Link && ((Link) t).getId().equals(ls.getId())) {
+                if (t instanceof Link && ((Link) t).getId() != null && ((Link) t).getId().equals(ls.getId())) {
                     ((Link) t).setSrc(ls);
                     return;
                 }
-                if (t instanceof Image && ((Image) t).getId().equals(ls.getId())) {
+                if (t instanceof Image && ((Image) t).getId() != null && ((Image) t).getId().equals(ls.getId())) {
                     ((Image) t).setSrc(ls);
                     return;
                 }
@@ -76,8 +113,10 @@ public class MarkdownReader {
 
     public TokensContainer traverseString(String line) {
         TokensContainer container;
-        if (line.startsWith(">")) {
+        final Matcher BlackquoteMatcher = BLACKQUOTE_PATTERN.matcher(line);
+        if (BlackquoteMatcher.matches()) {
             container = new Blockquote();
+            line = BlackquoteMatcher.group(1);
         } else {
             container = new Paragraph();
         }
@@ -153,14 +192,15 @@ public class MarkdownReader {
 
             }
         }
-        if (container.getTokens().get(0).getBegin() != 0) { //first if exist
+        if (!container.getTokens().isEmpty() && container.getTokens().get(0).getBegin() != 0) { //first if exist
             final Phrase t = makeText(line.substring(ifHeading, container.getTokens().get(0).getBegin()),
                     ifHeading, container.getTokens().get(0).getBegin());
             t.setHeader(ifHeading);
             phrases.add(t);
         }
 
-        if (container.getTokens().get(container.getTokens().size() - 1).getEnd() < line.length()) { //last if exist
+        if (!container.getTokens().isEmpty() &&
+                container.getTokens().get(container.getTokens().size() - 1).getEnd() < line.length()) { //last if exist
             final Phrase t = makeText(
                     line.substring(container.getTokens().get(container.getTokens().size() - 1).getEnd(),
                             line.length()), container.getTokens().get(container.getTokens().size() - 1).getEnd(),
@@ -169,12 +209,16 @@ public class MarkdownReader {
             phrases.add(t);
         }
 
+        if (container.getTokens().isEmpty() && line.length() > 0){
+            final Phrase t = makeText(
+                    line.substring(0, line.length()), 0, line.length());
+            t.setHeader(ifHeading);
+            phrases.add(t);
+        }
+
         container.addToken(phrases);
         container.sort();
-        /*for (Token t : container) {
-            System.out.println(t.getBegin() + " - " + t.getEnd() + " " + t.toString());
-        }
-        System.out.println();*/
+
         return container;
     }
 
@@ -248,10 +292,6 @@ public class MarkdownReader {
                 phrase.addText(currentText);
             }
         } while (pointer < line.length());
-
-        if (isBold || isItalics) {
-            //TODO throw new NotClosedException
-        }
 
         return phrase;
     }

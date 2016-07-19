@@ -29,6 +29,10 @@ public class MarkupList extends TokensContainer {
         return (ListElement) tokens.get(tokens.size() - 1);
     }
 
+    public Types getType() {
+        return type;
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();

@@ -27,7 +27,8 @@ public class Main {
 
         try {
             MarkdownReader markdownReader = new MarkdownReader("input.md");
-            markdownReader.makeDom();
+            Dom dom = markdownReader.makeDom();
+            System.out.println(dom.toString());
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
