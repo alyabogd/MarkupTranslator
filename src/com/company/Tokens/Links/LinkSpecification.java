@@ -6,9 +6,11 @@ public class LinkSpecification extends Token {
     private String id;
     private String adress;
 
-    public LinkSpecification(String id, String adress){
+    public LinkSpecification(String id, String adress, int begin, int end){
         this.id = id;
         this.adress = adress;
+        this.begin = begin;
+        this.end = end;
     }
 
     public String getId() {

@@ -1,8 +1,8 @@
-package com.company.Tokens;
+package com.company;
 
 import com.sun.istack.internal.Nullable;
 
-public class Text extends Token {
+public class Text {
     public enum Properties {
         NONE, //in order to HEADER_ONE.ordinal() == 1 and so on
         HEADER_ONE,
@@ -17,8 +17,6 @@ public class Text extends Token {
 
     private String wording;
     private boolean[] state = new boolean[Properties.values().length];
-
-    public Text(){}
 
     public Text(String wording){
         this.wording = wording;

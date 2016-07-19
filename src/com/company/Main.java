@@ -1,15 +1,6 @@
 package com.company;
 
-import com.company.Tokens.Text;
-
-import java.io.BufferedReader;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class Main {
 
@@ -36,7 +27,8 @@ public class Main {
 
         try {
             MarkdownReader markdownReader = new MarkdownReader("input.md");
-            markdownReader.makeDom();
+            Dom dom = markdownReader.makeDom();
+            System.out.println(dom.toString());
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }

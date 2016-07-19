@@ -1,10 +1,12 @@
 package com.company.Tokens;
 
+import com.company.Text;
+import com.company.Tokens.Links.LinkSpecification;
 import com.sun.istack.internal.Nullable;
 
 public class Image extends Token{
 
-    private Text altText;
+    private Phrase altText;
     private String src;
     private String id; //in case one has a referenced src
 
@@ -13,11 +15,15 @@ public class Image extends Token{
         return src;
     }
 
-    public void setSrc(String src) {
-        this.src = src;
+    public void setSrc(LinkSpecification ls) {
+        if (ls.getId().equals(this.id)) {
+            this.src = ls.getAdress();
+        } else {
+            throw new IllegalArgumentException("id are not the same");
+        }
     }
 
-    public Text getAltText() {
+    public Phrase getAltText() {
         return altText;
     }
 
@@ -27,34 +33,38 @@ public class Image extends Token{
     }
 
     public static class ImageFactory{
-        public static Image createImage(Text altText, String src){
+        public static Image createImage(Phrase altText, String src, int begin, int end){
             Image image = new Image();
             image.altText = altText;
             image.src = src;
+            image.begin = begin;
+            image.end = end;
             return image;
         }
 
-        public static Image createImage(String altWording, String src){
-            return createImage(new Text(altWording), src);
+        public static Image createImage(String altWording, String src, int begin, int end){
+            return createImage(new Phrase(new Text(altWording)), src, begin, end);
         }
 
-        public static Image createImage(String src){
-            return createImage("", src);
+        public static Image createImage(String src, int begin, int end){
+            return createImage("", src, begin, end);
         }
 
-        public static Image createReferencedImage(Text altText, String id){
+        public static Image createReferencedImage(Phrase altText, String id, int begin, int end){
             Image image = new Image();
             image.altText = altText;
             image.id = id;
+            image.begin = begin;
+            image.end = end;
             return image;
         }
 
-        public static Image createReferencedImage(String altWording, String id) {
-            return createReferencedImage(new Text(altWording), id);
+        public static Image createReferencedImage(String altWording, String id, int begin, int end) {
+            return createReferencedImage(new Phrase(new Text(altWording)), id, begin, end);
         }
 
-        public static Image createReferencedImage(String id) {
-            return createReferencedImage("", id);
+        public static Image createReferencedImage(String id, int begin, int end) {
+            return createReferencedImage("", id, begin, end);
         }
     }
 
