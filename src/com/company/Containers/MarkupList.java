@@ -1,12 +1,14 @@
-package com.company.Tokens.List;
+package com.company.Containers;
 
+import com.company.Tokens.ListElement;
 import com.company.Tokens.Token;
+import com.sun.istack.internal.Nullable;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-public class MarkupList extends Token implements Iterable<ListElement> {
+public class MarkupList extends TokensContainer {
 
     public enum Types {
         ORDRED,
@@ -14,30 +16,24 @@ public class MarkupList extends Token implements Iterable<ListElement> {
     }
 
     private Types type;
-    private List<ListElement> elements = new ArrayList<>();
 
     public MarkupList(Types t) {
         this.type = t;
     }
 
-    public void add(ListElement element) {
-        elements.add(element);
-    }
-
-    public List<ListElement> getElements() {
-        return elements;
-    }
-
-    @Override
-    public Iterator<ListElement> iterator() {
-        return elements.iterator();
+    @Nullable
+    public ListElement getLastListElement() {
+        if (tokens.isEmpty()) {
+            return null;
+        }
+        return (ListElement) tokens.get(tokens.size() - 1);
     }
 
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("{ List ").append(type).append(" : ");
-        for (ListElement le: elements) {
+        for (Token le : tokens) {
             sb.append("\n").append("    ").append(le.toString());
         }
         sb.append(" }");

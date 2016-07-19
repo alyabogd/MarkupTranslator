@@ -1,8 +1,7 @@
 package com.company.Containers;
 
-import com.company.Tokens.Token;
 
-public class Blockquote extends TokensContainer implements Iterable<Token> {
+public class Blockquote extends TokensContainer {
 
     @Override
     public String toString() {

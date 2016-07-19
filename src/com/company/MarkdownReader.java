@@ -23,6 +23,7 @@ public class MarkdownReader {
     private static final Pattern INLINE_IMAGE_PATTERN = Pattern.compile("!\\[([^\\]]*)\\]\\(([^\\)]*)\\)");
     private static final Pattern REFERENCED_IMAGE_PATTERN = Pattern.compile("!\\[([^\\]]*)\\]\\[([^\\)]*)\\]");
     private static final Pattern LINK_SPECIFICATION_PATTERN = Pattern.compile("\\[([^\\]]+)\\]:\\s?(.+)");
+    private static final Pattern NON_ORDERED_LIST_ELEMENT_PATTERN = Pattern.compile("\\s*\\*\\s+([^\\*]+)");
 
     private BufferedReader reader;
 

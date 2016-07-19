@@ -1,6 +1,6 @@
 package com.company.Containers;
 
-public class Paragraph extends TokensContainer{
+public class Paragraph extends TokensContainer {
 
     @Override
     public String toString() {
