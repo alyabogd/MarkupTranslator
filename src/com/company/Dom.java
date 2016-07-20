@@ -9,10 +9,16 @@ import java.util.List;
 
 public class Dom implements Iterable<TokensContainer> {
 
+    private String fileName;
+
     private List<TokensContainer> containers = new LinkedList<>();
 
     public List<TokensContainer> getContainers() {
         return containers;
+    }
+
+    public Dom(String fileName){
+        this.fileName = fileName;
     }
 
     public void addContainer(TokensContainer t) {
@@ -29,6 +35,10 @@ public class Dom implements Iterable<TokensContainer> {
 
     public boolean isEmpty() {
         return containers.isEmpty();
+    }
+
+    public String getFileName() {
+        return fileName;
     }
 
     @Override

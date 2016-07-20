@@ -30,21 +30,20 @@ public class MarkdownReader {
     private static final Pattern BLACKQUOTE_PATTERN = Pattern.compile("\\s*>\\s*(.*)");
 
     private BufferedReader reader;
+    private String fileName;
 
     public MarkdownReader(String fileName) throws FileNotFoundException {
         reader = new BufferedReader(new FileReader(fileName));
+        this.fileName = fileName.substring(0, fileName.length() - 3);
     }
 
     public MarkdownReader(File file) throws FileNotFoundException {
         reader = new BufferedReader(new FileReader(file));
-    }
-
-    public MarkdownReader(FileDescriptor fd) {
-        reader = new BufferedReader(new FileReader(fd));
+        this.fileName = file.getName().substring(0, file.getName().length() - 3);
     }
 
     public Dom makeDom() {
-        Dom dom = new Dom();
+        Dom dom = new Dom(fileName);
         String s;
         try {
             while ((s = reader.readLine()) != null) {

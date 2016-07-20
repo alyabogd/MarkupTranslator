@@ -55,6 +55,14 @@ public class Phrase extends Token implements Iterable<Text> {
         }
     }
 
+    public String getSimpleText(){
+        StringBuilder sb = new StringBuilder();
+        for (Text t: phrase){
+            sb.append(t.getWording()).append(" ");
+        }
+        return sb.toString();
+    }
+
     public boolean isEmpty() {
         return phrase.isEmpty();
     }
