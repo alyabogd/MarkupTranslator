@@ -19,7 +19,7 @@ import java.util.regex.Pattern;
 
 public class MarkdownReader {
 
-    private static final Pattern HEADINGS_PATTERN = Pattern.compile("^(#{1,6})\\w+");
+    private static final Pattern HEADINGS_PATTERN = Pattern.compile("^(\\s*#{1,6})\\s*\\w+");
     private static final Pattern INLINE_LINK_PATTERN = Pattern.compile("\\[([^\\]]+)\\]\\(([^\\)]*)\\)");
     private static final Pattern REFERENCED_LINK_PATTERN = Pattern.compile("\\[([^\\]]+)\\]\\[([^\\)]*)\\]");
     private static final Pattern INLINE_IMAGE_PATTERN = Pattern.compile("!\\[([^\\]]*)\\]\\(([^\\)]*)\\)");
@@ -27,7 +27,7 @@ public class MarkdownReader {
     private static final Pattern LINK_SPECIFICATION_PATTERN = Pattern.compile("\\s*\\[([^\\]]+)\\]:\\s?(.+)");
     private static final Pattern NON_ORDERED_LIST_ELEMENT_PATTERN = Pattern.compile("\\s*\\*\\s+([^\\*]+)");
     private static final Pattern ORDERED_LIST_ELEMENT_PATTERN = Pattern.compile("\\s*\\d{1,3}\\.\\s+([^\\*]+)");
-    private static final Pattern BLACKQUOTE_PATTERN = Pattern.compile("\\s+>\\s*(.*)");
+    private static final Pattern BLACKQUOTE_PATTERN = Pattern.compile("\\s*>\\s*(.*)");
 
     private BufferedReader reader;
 
@@ -131,6 +131,7 @@ public class MarkdownReader {
         final Matcher m = HEADINGS_PATTERN.matcher(line);
         if (m.lookingAt()) {
             ifHeading = m.group(1).length();
+            line = line.substring(ifHeading, line.length());
         }
 
         while (inlineLinkMatcher.find()) {

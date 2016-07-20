@@ -26,7 +26,7 @@ public class Main {
         String tryingLinks = "[this *is* __a__ link](www.website.com";
 
         try {
-            MarkdownReader markdownReader = new MarkdownReader("input.md");
+            MarkdownReader markdownReader = new MarkdownReader("bigInput.md");
             Dom dom = markdownReader.makeDom();
             System.out.println(dom.toString());
         } catch (FileNotFoundException e) {
