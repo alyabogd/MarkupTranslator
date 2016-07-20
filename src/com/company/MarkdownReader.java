@@ -28,6 +28,8 @@ public class MarkdownReader {
     private static final Pattern NON_ORDERED_LIST_ELEMENT_PATTERN = Pattern.compile("\\s*\\*\\s+([^\\*]+)");
     private static final Pattern ORDERED_LIST_ELEMENT_PATTERN = Pattern.compile("\\s*\\d{1,3}\\.\\s+([^\\*]+)");
     private static final Pattern BLACKQUOTE_PATTERN = Pattern.compile("\\s*>\\s*(.*)");
+    private static final Pattern HEADER_ONE_PATTERN = Pattern.compile("={3,100}\\s*");
+    private static final Pattern HEADER_TWO_PATTERN = Pattern.compile("-{3,100}\\s*");
 
     private BufferedReader reader;
     private String fileName;
@@ -47,6 +49,22 @@ public class MarkdownReader {
         String s;
         try {
             while ((s = reader.readLine()) != null) {
+                final Matcher HeaderOneMatcher = HEADER_ONE_PATTERN.matcher(s);
+                if (HeaderOneMatcher.matches() && !dom.isEmpty() && dom.getLastElement() instanceof Paragraph){
+                    (dom.getLastElement()).getTokens().stream().filter(t -> t instanceof Phrase).forEach(t -> {
+                        ((Phrase) t).setHeader(1);
+                    });
+                    continue;
+                }
+
+                final Matcher HeaderTwoMatcher = HEADER_TWO_PATTERN.matcher(s);
+                if (HeaderTwoMatcher.matches() && !dom.isEmpty() && dom.getLastElement() instanceof Paragraph){
+                    (dom.getLastElement()).getTokens().stream().filter(t -> t instanceof Phrase).forEach(t -> {
+                        ((Phrase) t).setHeader(2);
+                    });
+                    continue;
+                }
+
                 final Matcher NonOrderedListMatcher = NON_ORDERED_LIST_ELEMENT_PATTERN.matcher(s);
                 final Matcher OrderedListMatcher = ORDERED_LIST_ELEMENT_PATTERN.matcher(s);
                 if (NonOrderedListMatcher.matches()) {
