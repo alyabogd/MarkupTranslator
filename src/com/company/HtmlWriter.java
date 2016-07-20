@@ -172,7 +172,7 @@ public class HtmlWriter {
                 printWriter.print("</b>");
             }
             if (level != 0) {
-                printWriter.print("<" + s + ">");
+                printWriter.print("</" + s + ">");
             }
         }
 
