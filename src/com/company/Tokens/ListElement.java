@@ -27,6 +27,6 @@ public class ListElement extends Token {
 
     @Override
     public String toString() {
-        return title.toString() + "\n    description: " + description.toString();
+        return title.toString() + "    description: " + (description == null ? "" : description.toString());
     }
 }

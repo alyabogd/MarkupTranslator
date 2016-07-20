@@ -27,9 +27,35 @@ public class Text {
         //TODO validate input i.e. text cannot be both HEADING_ONE and HEADING_THREE
     }
 
-    public boolean[] getState(){
-        return state;
+    public boolean isItalics(){
+        return state[Properties.ITALIC.ordinal()];
     }
+
+    public boolean isBold(){
+        return state[Properties.BOLD.ordinal()];
+    }
+
+    public int getHeaderLevel(){ //0 - for non-heading // 1 - 6 for corresponding headers
+        if (state[Properties.HEADER_ONE.ordinal()]){
+            return 1;
+        }
+        if (state[Properties.HEADER_TWO.ordinal()]){
+            return 2;
+        }
+        if (state[Properties.HEADER_THREE.ordinal()]){
+            return 3;
+        }
+        if (state[Properties.HEADER_FOUR.ordinal()]){
+            return 4;
+        }
+        if (state[Properties.HEADER_FIVE.ordinal()]){
+            return 5;
+        }
+        if (state[Properties.HEADER_SIX.ordinal()]){
+            return 6;
+        }
+        return 0;
+    } //?????????
 
     @Nullable
     public String getWording(){

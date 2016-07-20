@@ -31,7 +31,7 @@ public class Main {
         try {
             MarkdownReader markdownReader = new MarkdownReader("input.md");
             Dom dom = markdownReader.makeDom();
-            //System.out.println(dom.toString());
+            System.out.println(dom.toString());
             HtmlWriter htmlWriter = new HtmlWriter("myoutput.html");
             htmlWriter.makeHtml(dom);
         } catch (FileNotFoundException e) {
