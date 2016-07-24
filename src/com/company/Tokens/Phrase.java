@@ -46,9 +46,9 @@ public class Phrase extends Token implements Iterable<Text> {
         phrase.add(t);
     }
 
-    public void setHeader(Text.Properties header) {
+    public void setStyle(Text.Properties style) {
         for (Text t : phrase) {
-            t.setState(header, true);
+            t.setState(style, true);
         }
     }
 
@@ -59,6 +59,8 @@ public class Phrase extends Token implements Iterable<Text> {
             t.setState(Text.Properties.values()[header], true);
         }
     }
+
+
 
     public String getSimpleText(){
         StringBuilder sb = new StringBuilder();

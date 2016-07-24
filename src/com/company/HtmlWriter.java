@@ -155,6 +155,9 @@ public class HtmlWriter {
                 s = "";
             }
 
+            if (t.isMonospace()){
+                printWriter.print("<code>");
+            }
             if (t.isBold()) {
                 printWriter.print("<b>");
             }
@@ -169,6 +172,9 @@ public class HtmlWriter {
             }
             if (t.isBold()) {
                 printWriter.print("</b>");
+            }
+            if (t.isMonospace()){
+                printWriter.print("</code>");
             }
             if (level != 0) {
                 printWriter.print("</" + s + ">");

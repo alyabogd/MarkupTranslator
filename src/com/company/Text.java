@@ -13,6 +13,7 @@ public class Text {
         HEADER_SIX,
         ITALIC,
         BOLD,
+        MONOSPACE
     }
 
     private String wording;
@@ -33,6 +34,10 @@ public class Text {
 
     public boolean isBold(){
         return state[Properties.BOLD.ordinal()];
+    }
+
+    public boolean isMonospace(){
+        return state[Properties.MONOSPACE.ordinal()];
     }
 
     public int getHeaderLevel(){ //0 - for non-heading // 1 - 6 for corresponding headers

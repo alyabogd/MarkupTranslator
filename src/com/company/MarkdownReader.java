@@ -30,9 +30,11 @@ public class MarkdownReader {
     private static final Pattern BLACKQUOTE_PATTERN = Pattern.compile("\\s*>\\s*(.*)");
     private static final Pattern HEADER_ONE_PATTERN = Pattern.compile("={3,100}\\s*");
     private static final Pattern HEADER_TWO_PATTERN = Pattern.compile("-{3,100}\\s*");
+    private static final Pattern MONOCPACE_PATTERN = Pattern.compile("`{3,100}\\s*");
 
     private BufferedReader reader;
     private String fileName;
+    private boolean monospaceGlobal = false;
 
     public MarkdownReader(String fileName) throws FileNotFoundException {
         reader = new BufferedReader(new FileReader(fileName));
@@ -69,13 +71,19 @@ public class MarkdownReader {
                     continue;
                 }
 
+                final Matcher monospaceMatcher = MONOCPACE_PATTERN.matcher(s);
+                if (monospaceMatcher.matches()){
+                    monospaceGlobal = !monospaceGlobal;
+                    continue;
+                }
+
                 final Matcher nonOrderedListMatcher = NON_ORDERED_LIST_ELEMENT_PATTERN.matcher(s);
                 final Matcher orderedListMatcher = ORDERED_LIST_ELEMENT_PATTERN.matcher(s);
                 if (nonOrderedListMatcher.matches()) {
-                    if (!(dom.getLastElement() instanceof MarkupList)) {
+                    if (!(dom.getLastElement().getTypeOfContainer() == TokensContainer.TypesOfContainers.MARKUP_LIST)) {
                         dom.addContainer(new MarkupList(MarkupList.Types.NON_ORDERED));
                     }
-                    if (dom.getLastElement() instanceof MarkupList &&
+                    if (dom.getLastElement().getTypeOfContainer() == TokensContainer.TypesOfContainers.MARKUP_LIST &&
                             ((MarkupList) dom.getLastElement()).getType() != MarkupList.Types.NON_ORDERED) {
                         dom.addContainer(new MarkupList(MarkupList.Types.NON_ORDERED));
                     }
@@ -103,7 +111,7 @@ public class MarkdownReader {
                     applyLinkSpecifiction(ls, dom);
                     continue;
                 }
-                if (dom.getLastElement()!= null && dom.getLastElement().getTypeOfContainer() == TokensContainer.TypesOfContainers.MARKUP_LIST) {
+                if (!dom.isEmpty() && dom.getLastElement().getTypeOfContainer() == TokensContainer.TypesOfContainers.MARKUP_LIST) {
                     if (((MarkupList) dom.getLastElement()).getLastListElement().getDescription() == null) {
                         ((MarkupList) dom.getLastElement()).getLastListElement().setDescription(tc);
                         continue;
@@ -280,9 +288,10 @@ public class MarkdownReader {
         char openItalics = '0';
         boolean isBold = false;
         char openBold = '0';
+        boolean isMonospace = false;
 
         do {
-            //pointer now is on * or _ or neither. i should check for italics or bold opening or closing
+            //pointer now is on * or _  or ` or neither. i should check for italics or bold opening or closing
             if (pointer < line.length() && line.charAt(pointer) == '*') {
                 if (pointer + 1 < line.length() && line.charAt(pointer + 1) == '*') { //BOLD case '**'
                     if (isBold && openBold == '*') { //closing
@@ -322,14 +331,21 @@ public class MarkdownReader {
                     pointer++;
                 }
             }
+
+            if (pointer < line.length() && line.charAt(pointer) == '`'){
+                isMonospace = !isMonospace;
+                pointer++;
+            }
             ////
-            final StringBuffer sb = new StringBuffer();
-            while (pointer < line.length() && line.charAt(pointer) != '*' && line.charAt(pointer) != '_') {
+            final StringBuilder sb = new StringBuilder();
+            while (pointer < line.length() && line.charAt(pointer) != '*' && line.charAt(pointer) != '_' &&
+                    line.charAt(pointer) != '`') {
                 sb.append(line.charAt(pointer));
                 pointer++; //TODO i think there is a better way to copy text until special symbol rather than do it by char
             }
             if (sb.length() > 0) {
                 final Text currentText = new Text("");
+                //TODO not closed previous bracket  like _not italic* italic*
                 if (isBold) {
                     if (pointer == line.length()) {
                         sb.insert(0, openBold);
@@ -345,11 +361,21 @@ public class MarkdownReader {
                         currentText.setState(Text.Properties.ITALIC, true);
                     }
                 }
+
+                if (isMonospace){
+                    if (pointer == line.length()){
+                        sb.insert(0, '`');
+                    } else {
+                        currentText.setState(Text.Properties.MONOSPACE, true);
+                    }
+                }
                 currentText.setWording(sb.toString());
                 phrase.addText(currentText);
             }
         } while (pointer < line.length());
-
+        if (monospaceGlobal){
+            phrase.setStyle(Text.Properties.MONOSPACE);
+        }
         return phrase;
     }
 
