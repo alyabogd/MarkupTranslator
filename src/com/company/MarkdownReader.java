@@ -113,7 +113,7 @@ public class MarkdownReader {
         return dom;
     }
 
-    public void applyLinkSpecifiction(LinkSpecification ls, Dom currentDom) {
+    private void applyLinkSpecifiction(LinkSpecification ls, Dom currentDom) {
         for (TokensContainer container : currentDom) {
             for (Token t : container) {
                 if (t instanceof Link && ((Link) t).getId() != null && ((Link) t).getId().equals(ls.getId())) {
@@ -128,7 +128,7 @@ public class MarkdownReader {
         }
     }
 
-    public TokensContainer traverseString(String line) {
+    private TokensContainer traverseString(String line) {
         TokensContainer container;
         final Matcher BlackquoteMatcher = BLACKQUOTE_PATTERN.matcher(line);
         if (BlackquoteMatcher.matches()) {
@@ -300,13 +300,23 @@ public class MarkdownReader {
                 pointer++; //TODO i think there is a better way to copy text until special symbol rather than do it by char
             }
             if (sb.length() > 0) {
-                final Text currentText = new Text(sb.toString());
+                final Text currentText = new Text("");
                 if (isBold) {
-                    currentText.setState(Text.Properties.BOLD, true);
+                    if (pointer == line.length()){
+                        sb.insert(0, openBold );
+                        sb.insert(0, openBold ); //because bold (2 times)
+                    } else {
+                        currentText.setState(Text.Properties.BOLD, true);
+                    }
                 }
-                if (isItalics) {
-                    currentText.setState(Text.Properties.ITALIC, true);
+                if (isItalics ) {
+                    if (pointer == line.length()){
+                        sb.insert(0, openItalics );
+                    } else {
+                        currentText.setState(Text.Properties.ITALIC, true);
+                    }
                 }
+                currentText.setWording(sb.toString());
                 phrase.addText(currentText);
             }
         } while (pointer < line.length());

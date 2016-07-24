@@ -29,15 +29,14 @@ public class Main {
         String tryingLinks = "[this *is* __a__ link](www.website.com";
 
         try {
-            MarkdownReader markdownReader = new MarkdownReader("bigInput.md");
+            MarkdownReader markdownReader = new MarkdownReader("input.md");
             Dom dom = markdownReader.makeDom();
             System.out.println(dom.toString());
-            HtmlWriter htmlWriter = new HtmlWriter("myoutput.html");
+            HtmlWriter htmlWriter = new HtmlWriter("output.html");
             htmlWriter.makeHtml(dom);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
-
 
         /*try {
             PrintWriter pw = new PrintWriter("myOut.txt");
