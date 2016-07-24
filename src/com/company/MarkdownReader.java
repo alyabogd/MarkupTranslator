@@ -72,7 +72,7 @@ public class MarkdownReader {
                 }
 
                 final Matcher monospaceMatcher = MONOCPACE_PATTERN.matcher(s);
-                if (monospaceMatcher.matches()){
+                if (monospaceMatcher.matches()) {
                     monospaceGlobal = !monospaceGlobal;
                     continue;
                 }
@@ -332,7 +332,7 @@ public class MarkdownReader {
                 }
             }
 
-            if (pointer < line.length() && line.charAt(pointer) == '`'){
+            if (pointer < line.length() && line.charAt(pointer) == '`') {
                 isMonospace = !isMonospace;
                 pointer++;
             }
@@ -347,7 +347,9 @@ public class MarkdownReader {
                 final Text currentText = new Text("");
                 //TODO not closed previous bracket  like _not italic* italic*
                 if (isBold) {
-                    if (pointer == line.length()) {
+                    char another = getAnother(openBold);
+                    if (pointer == line.length() || (pointer + 1 < line.length() &&
+                            line.charAt(pointer) == another && line.charAt(pointer + 1) == another)) {
                         sb.insert(0, openBold);
                         sb.insert(0, openBold); //because bold (2 times)
                     } else {
@@ -355,15 +357,15 @@ public class MarkdownReader {
                     }
                 }
                 if (isItalics) {
-                    if (pointer == line.length()) {
+                    char another = getAnother(openItalics);
+                    if (pointer == line.length() || (pointer < line.length() && line.charAt(pointer) == another)) {
                         sb.insert(0, openItalics);
                     } else {
                         currentText.setState(Text.Properties.ITALIC, true);
                     }
                 }
-
-                if (isMonospace){
-                    if (pointer == line.length()){
+                if (isMonospace) {
+                    if (pointer == line.length()) {
                         sb.insert(0, '`');
                     } else {
                         currentText.setState(Text.Properties.MONOSPACE, true);
@@ -373,11 +375,17 @@ public class MarkdownReader {
                 phrase.addText(currentText);
             }
         } while (pointer < line.length());
-        if (monospaceGlobal){
+        if (monospaceGlobal) {
             phrase.setStyle(Text.Properties.MONOSPACE);
         }
         return phrase;
     }
 
+    private char getAnother(char c){
+        if (c == '*') {
+            return '_';
+        }
+        return '*';
+    }
 
 }
