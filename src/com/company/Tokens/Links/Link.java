@@ -9,6 +9,11 @@ import java.util.Collections;
 
 public class Link extends Token {
 
+    public enum TypesOfLinks{
+        INLINE,
+        REFERENCED
+    }
+
     private Phrase text;
     private String src;
     private String id; //in case one is a referenced link

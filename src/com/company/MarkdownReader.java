@@ -50,16 +50,20 @@ public class MarkdownReader {
         try {
             while ((s = reader.readLine()) != null) {
                 final Matcher HeaderOneMatcher = HEADER_ONE_PATTERN.matcher(s);
-                if (HeaderOneMatcher.matches() && !dom.isEmpty() && dom.getLastElement() instanceof Paragraph){
-                    (dom.getLastElement()).getTokens().stream().filter(t -> t instanceof Phrase).forEach(t -> {
+                if (HeaderOneMatcher.matches() && !dom.isEmpty() &&
+                        dom.getLastElement().getTypeOfContainer() == TokensContainer.TypesOfContainers.PARAGRAPH) {
+                    (dom.getLastElement()).getTokens().stream()
+                            .filter(t -> t.getTypeOfTokens() == Token.TypesOfTokens.PHRASE).forEach(t -> {
                         ((Phrase) t).setHeader(1);
                     });
                     continue;
                 }
 
                 final Matcher HeaderTwoMatcher = HEADER_TWO_PATTERN.matcher(s);
-                if (HeaderTwoMatcher.matches() && !dom.isEmpty() && dom.getLastElement() instanceof Paragraph){
-                    (dom.getLastElement()).getTokens().stream().filter(t -> t instanceof Phrase).forEach(t -> {
+                if (HeaderTwoMatcher.matches() && !dom.isEmpty() &&
+                        dom.getLastElement().getTypeOfContainer() == TokensContainer.TypesOfContainers.PARAGRAPH) {
+                    (dom.getLastElement()).getTokens().stream()
+                            .filter(t -> t.getTypeOfTokens() == Token.TypesOfTokens.PHRASE).forEach(t -> {
                         ((Phrase) t).setHeader(2);
                     });
                     continue;
@@ -81,10 +85,10 @@ public class MarkdownReader {
                 }
 
                 if (OrderedListMatcher.matches()) {
-                    if (!(dom.getLastElement() instanceof MarkupList)) {
+                    if (!(dom.getLastElement().getTypeOfContainer() == TokensContainer.TypesOfContainers.MARKUP_LIST)) {
                         dom.addContainer(new MarkupList(MarkupList.Types.ORDRED));
                     }
-                    if (dom.getLastElement() instanceof MarkupList &&
+                    if (dom.getLastElement().getTypeOfContainer() == TokensContainer.TypesOfContainers.MARKUP_LIST &&
                             ((MarkupList) dom.getLastElement()).getType() != MarkupList.Types.ORDRED) {
                         dom.addContainer(new MarkupList(MarkupList.Types.ORDRED));
                     }
@@ -94,13 +98,13 @@ public class MarkdownReader {
                 }
 
                 final TokensContainer tc = traverseString(s);
-                if (!tc.getTokens().isEmpty() &&  tc.getTokens().get(0) instanceof LinkSpecification) {
+                if (!tc.getTokens().isEmpty() && tc.getTokens().get(0) instanceof LinkSpecification) {
                     final LinkSpecification ls = (LinkSpecification) tc.getTokens().get(0);
                     applyLinkSpecifiction(ls, dom);
                     continue;
                 }
-                if (dom.getLastElement() instanceof MarkupList){
-                    if (((MarkupList) dom.getLastElement()).getLastListElement().getDescription() == null){
+                if (dom.getLastElement().getTypeOfContainer() == TokensContainer.TypesOfContainers.MARKUP_LIST) {
+                    if (((MarkupList) dom.getLastElement()).getLastListElement().getDescription() == null) {
                         ((MarkupList) dom.getLastElement()).getLastListElement().setDescription(tc);
                         continue;
                     }
@@ -116,16 +120,91 @@ public class MarkdownReader {
     private void applyLinkSpecifiction(LinkSpecification ls, Dom currentDom) {
         for (TokensContainer container : currentDom) {
             for (Token t : container) {
-                if (t instanceof Link && ((Link) t).getId() != null && ((Link) t).getId().equals(ls.getId())) {
+                if (t.getTypeOfTokens() == Token.TypesOfTokens.LINK
+                        && ((Link) t).getId() != null && ((Link) t).getId().equals(ls.getId())) {
                     ((Link) t).setSrc(ls);
                     return;
                 }
-                if (t instanceof Image && ((Image) t).getId() != null && ((Image) t).getId().equals(ls.getId())) {
+                if (t.getTypeOfTokens() == Token.TypesOfTokens.IMAGE
+                        && ((Image) t).getId() != null && ((Image) t).getId().equals(ls.getId())) {
                     ((Image) t).setSrc(ls);
                     return;
                 }
             }
         }
+    }
+
+    private List<Link> getLinks(String line, int ifHeading) {
+        List<Link> links = new LinkedList<>();
+        links.addAll(getSpecialLinks(Link.TypesOfLinks.INLINE, line, ifHeading));
+        links.addAll(getSpecialLinks(Link.TypesOfLinks.REFERENCED, line, ifHeading));
+        return links;
+    }
+
+    private List<Link> getSpecialLinks(Link.TypesOfLinks type, String line, int ifHeading) {
+        Matcher m;
+        List<Link> specialLinks = new LinkedList<>();
+        if (type == Link.TypesOfLinks.INLINE) {
+            m = INLINE_LINK_PATTERN.matcher(line);
+        } else {
+            m = REFERENCED_LINK_PATTERN.matcher(line);
+        }
+        while (m.find()) {
+            if (m.start() > 0 && line.charAt(m.start() - 1) == '!') {
+                continue;
+            }
+            final Phrase activeText = makeText(m.group(1), m.start(1), m.end(1));
+            activeText.setHeader(ifHeading);
+            final String websiteOrId = m.group(2);
+            if (type == Link.TypesOfLinks.INLINE) {
+                specialLinks.add(Link.LinkFactory.createLink(activeText, websiteOrId, m.start(), m.end()));
+            } else {
+                specialLinks.add(Link.LinkFactory.createReferencedLink(activeText, websiteOrId, m.start(), m.end()));
+            }
+        }
+        return specialLinks;
+    }
+
+    private List<LinkSpecification> getLinkSpecifications(String line) {
+        List<LinkSpecification> linkSpecifications = new LinkedList<>();
+        final Matcher linkSpecificationMatcher = LINK_SPECIFICATION_PATTERN.matcher(line);
+        while (linkSpecificationMatcher.find()) {
+            final String id = linkSpecificationMatcher.group(1);
+            final String src = linkSpecificationMatcher.group(2);
+            LinkSpecification ls = new LinkSpecification(id, src,
+                    linkSpecificationMatcher.start(), linkSpecificationMatcher.end());
+            linkSpecifications.add(ls);
+        }
+        return linkSpecifications;
+    }
+
+    private List<Image> getImages(String line, int ifHeading) {
+        List<Image> images = new LinkedList<>();
+        images.addAll(getSpecialImage(Link.TypesOfLinks.INLINE, line, ifHeading));
+        images.addAll(getSpecialImage(Link.TypesOfLinks.REFERENCED, line, ifHeading));
+        return images;
+    }
+
+    private List<Image> getSpecialImage(Link.TypesOfLinks type, String line, int ifHeading) {
+        Matcher m;
+        List<Image> specialImages = new LinkedList<>();
+        if (type == Link.TypesOfLinks.INLINE) {
+            m = INLINE_IMAGE_PATTERN.matcher(line);
+        } else {
+            m = REFERENCED_IMAGE_PATTERN.matcher(line);
+        }
+        while (m.find()) {
+            final Phrase altText = makeText(m.group(1),
+                    m.start(1), m.end(1));
+            altText.setHeader(ifHeading);
+            final String adressOrId = m.group(2);
+            if (type == Link.TypesOfLinks.INLINE) {
+                specialImages.add(Image.ImageFactory.createImage(altText, adressOrId, m.start(), m.end()));
+            } else {
+                specialImages.add(Image.ImageFactory.createReferencedImage(altText, adressOrId, m.start(), m.end()));
+            }
+        }
+        return specialImages;
     }
 
     private TokensContainer traverseString(String line) {
@@ -137,13 +216,6 @@ public class MarkdownReader {
         } else {
             container = new Paragraph();
         }
-
-        final Matcher inlineLinkMatcher = INLINE_LINK_PATTERN.matcher(line);
-        final Matcher referencedLinkMatcher = REFERENCED_LINK_PATTERN.matcher(line);
-        final Matcher linkSpecificationMatcher = LINK_SPECIFICATION_PATTERN.matcher(line);
-        final Matcher inlineImageMatcher = INLINE_IMAGE_PATTERN.matcher(line);
-        final Matcher referencedImageMatcher = REFERENCED_IMAGE_PATTERN.matcher(line);
-
         int ifHeading = 0; //0 - for non-heading// 1-6 for corresponding headers
         final Matcher m = HEADINGS_PATTERN.matcher(line);
         if (m.lookingAt()) {
@@ -151,51 +223,9 @@ public class MarkdownReader {
             line = line.substring(ifHeading, line.length());
         }
 
-        while (inlineLinkMatcher.find()) {
-            if (inlineLinkMatcher.start() > 0 && line.charAt(inlineLinkMatcher.start() - 1) == '!') {
-                continue;
-            }
-            final Phrase activeText = makeText(inlineLinkMatcher.group(1),
-                    inlineLinkMatcher.start(1), inlineLinkMatcher.end(1));
-            activeText.setHeader(ifHeading);
-            final String website = inlineLinkMatcher.group(2);
-            container.addToken(Link.LinkFactory.createLink(activeText, website,
-                    inlineLinkMatcher.start(), inlineLinkMatcher.end()));
-        }
-        while (referencedLinkMatcher.find()) {
-            if (referencedLinkMatcher.start() > 0 && line.charAt(referencedLinkMatcher.start() - 1) == '!') {
-                continue;
-            }
-            final Phrase activeText = makeText(referencedLinkMatcher.group(1),
-                    referencedLinkMatcher.start(1), referencedLinkMatcher.end(1));
-            activeText.setHeader(ifHeading);
-            final String id = referencedLinkMatcher.group(2);
-            container.addToken(Link.LinkFactory.createReferencedLink(activeText, id,
-                    referencedLinkMatcher.start(), referencedLinkMatcher.end()));
-        }
-        while (linkSpecificationMatcher.find()) {
-            final String id = linkSpecificationMatcher.group(1);
-            final String src = linkSpecificationMatcher.group(2);
-            LinkSpecification ls = new LinkSpecification(id, src,
-                    linkSpecificationMatcher.start(), linkSpecificationMatcher.end());
-            container.addToken(ls);
-        }
-        while (inlineImageMatcher.find()) {
-            final Phrase altText = makeText(inlineImageMatcher.group(1),
-                    inlineImageMatcher.start(1), inlineImageMatcher.end(1));
-            altText.setHeader(ifHeading);
-            final String src = inlineImageMatcher.group(2);
-            container.addToken(Image.ImageFactory.createImage(altText, src,
-                    inlineImageMatcher.start(), inlineImageMatcher.end()));
-        }
-        while (referencedImageMatcher.find()) {
-            final Phrase altText = makeText(referencedImageMatcher.group(1),
-                    referencedImageMatcher.start(1), referencedImageMatcher.end(1));
-            altText.setHeader(ifHeading);
-            final String id = referencedImageMatcher.group(2);
-            container.addToken(Image.ImageFactory.createReferencedImage(altText, id,
-                    referencedImageMatcher.start(), referencedImageMatcher.end()));
-        }
+        container.addToken(getLinks(line, ifHeading));
+        container.addToken(getLinkSpecifications(line));
+        container.addToken(getImages(line, ifHeading));
         container.sort();
 
 
@@ -227,7 +257,7 @@ public class MarkdownReader {
             phrases.add(t);
         }
 
-        if (container.getTokens().isEmpty() && line.length() > 0){
+        if (container.getTokens().isEmpty() && line.length() > 0) {
             final Phrase t = makeText(
                     line.substring(0, line.length()), 0, line.length());
             t.setHeader(ifHeading);
@@ -239,7 +269,6 @@ public class MarkdownReader {
 
         return container;
     }
-
 
     private Phrase makeText(String line, int begin, int end) {
         Phrase phrase = new Phrase(begin, end);
@@ -302,16 +331,16 @@ public class MarkdownReader {
             if (sb.length() > 0) {
                 final Text currentText = new Text("");
                 if (isBold) {
-                    if (pointer == line.length()){
-                        sb.insert(0, openBold );
-                        sb.insert(0, openBold ); //because bold (2 times)
+                    if (pointer == line.length()) {
+                        sb.insert(0, openBold);
+                        sb.insert(0, openBold); //because bold (2 times)
                     } else {
                         currentText.setState(Text.Properties.BOLD, true);
                     }
                 }
-                if (isItalics ) {
-                    if (pointer == line.length()){
-                        sb.insert(0, openItalics );
+                if (isItalics) {
+                    if (pointer == line.length()) {
+                        sb.insert(0, openItalics);
                     } else {
                         currentText.setState(Text.Properties.ITALIC, true);
                     }
