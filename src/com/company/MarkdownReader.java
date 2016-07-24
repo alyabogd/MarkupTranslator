@@ -49,8 +49,8 @@ public class MarkdownReader {
         String s;
         try {
             while ((s = reader.readLine()) != null) {
-                final Matcher HeaderOneMatcher = HEADER_ONE_PATTERN.matcher(s);
-                if (HeaderOneMatcher.matches() && !dom.isEmpty() &&
+                final Matcher headerOneMatcher = HEADER_ONE_PATTERN.matcher(s);
+                if (headerOneMatcher.matches() && !dom.isEmpty() &&
                         dom.getLastElement().getTypeOfContainer() == TokensContainer.TypesOfContainers.PARAGRAPH) {
                     (dom.getLastElement()).getTokens().stream()
                             .filter(t -> t.getTypeOfTokens() == Token.TypesOfTokens.PHRASE).forEach(t -> {
@@ -59,8 +59,8 @@ public class MarkdownReader {
                     continue;
                 }
 
-                final Matcher HeaderTwoMatcher = HEADER_TWO_PATTERN.matcher(s);
-                if (HeaderTwoMatcher.matches() && !dom.isEmpty() &&
+                final Matcher headerTwoMatcher = HEADER_TWO_PATTERN.matcher(s);
+                if (headerTwoMatcher.matches() && !dom.isEmpty() &&
                         dom.getLastElement().getTypeOfContainer() == TokensContainer.TypesOfContainers.PARAGRAPH) {
                     (dom.getLastElement()).getTokens().stream()
                             .filter(t -> t.getTypeOfTokens() == Token.TypesOfTokens.PHRASE).forEach(t -> {
@@ -69,9 +69,9 @@ public class MarkdownReader {
                     continue;
                 }
 
-                final Matcher NonOrderedListMatcher = NON_ORDERED_LIST_ELEMENT_PATTERN.matcher(s);
-                final Matcher OrderedListMatcher = ORDERED_LIST_ELEMENT_PATTERN.matcher(s);
-                if (NonOrderedListMatcher.matches()) {
+                final Matcher nonOrderedListMatcher = NON_ORDERED_LIST_ELEMENT_PATTERN.matcher(s);
+                final Matcher orderedListMatcher = ORDERED_LIST_ELEMENT_PATTERN.matcher(s);
+                if (nonOrderedListMatcher.matches()) {
                     if (!(dom.getLastElement() instanceof MarkupList)) {
                         dom.addContainer(new MarkupList(MarkupList.Types.NON_ORDERED));
                     }
@@ -79,20 +79,20 @@ public class MarkdownReader {
                             ((MarkupList) dom.getLastElement()).getType() != MarkupList.Types.NON_ORDERED) {
                         dom.addContainer(new MarkupList(MarkupList.Types.NON_ORDERED));
                     }
-                    final ListElement le = new ListElement(traverseString(NonOrderedListMatcher.group(1)));
+                    final ListElement le = new ListElement(traverseString(nonOrderedListMatcher.group(1)));
                     dom.getLastElement().addToken(le);
                     continue;
                 }
 
-                if (OrderedListMatcher.matches()) {
+                if (orderedListMatcher.matches()) {
                     if (!(dom.getLastElement().getTypeOfContainer() == TokensContainer.TypesOfContainers.MARKUP_LIST)) {
-                        dom.addContainer(new MarkupList(MarkupList.Types.ORDRED));
+                        dom.addContainer(new MarkupList(MarkupList.Types.ORDERED));
                     }
                     if (dom.getLastElement().getTypeOfContainer() == TokensContainer.TypesOfContainers.MARKUP_LIST &&
-                            ((MarkupList) dom.getLastElement()).getType() != MarkupList.Types.ORDRED) {
-                        dom.addContainer(new MarkupList(MarkupList.Types.ORDRED));
+                            ((MarkupList) dom.getLastElement()).getType() != MarkupList.Types.ORDERED) {
+                        dom.addContainer(new MarkupList(MarkupList.Types.ORDERED));
                     }
-                    final ListElement le = new ListElement(traverseString(OrderedListMatcher.group(1)));
+                    final ListElement le = new ListElement(traverseString(orderedListMatcher.group(1)));
                     dom.getLastElement().addToken(le);
                     continue;
                 }

@@ -11,7 +11,7 @@ import java.util.List;
 public class MarkupList extends TokensContainer {
 
     public enum Types {
-        ORDRED,
+        ORDERED,
         NON_ORDERED
     }
 

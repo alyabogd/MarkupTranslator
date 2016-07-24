@@ -86,7 +86,7 @@ public class HtmlWriter {
 
     private void writeMarkupList(MarkupList markupList) {
         switch (markupList.getType()) {
-            case ORDRED:
+            case ORDERED:
                 printWriter.println("<ol>");
                 break;
             case NON_ORDERED:
@@ -104,7 +104,7 @@ public class HtmlWriter {
             }
         }
         switch (markupList.getType()) {
-            case ORDRED:
+            case ORDERED:
                 printWriter.println("</ol>");
                 break;
             case NON_ORDERED:
