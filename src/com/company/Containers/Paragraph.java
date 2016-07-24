@@ -2,6 +2,10 @@ package com.company.Containers;
 
 public class Paragraph extends TokensContainer {
 
+    public Paragraph(){
+        this.typeOfContainer = TypesOfContainers.PARAGRAPH;
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();

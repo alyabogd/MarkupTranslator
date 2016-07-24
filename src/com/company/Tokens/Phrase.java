@@ -12,25 +12,30 @@ public class Phrase extends Token implements Iterable<Text> {
 
     public Phrase(List<Text> l){
         phrase = l;
+        this.typeOfTokens = TypesOfTokens.PHRASE;
     }
 
     public Phrase(Text t){
         phrase.add(t);
+        this.typeOfTokens = TypesOfTokens.PHRASE;
     }
 
     public Phrase(int begin, int end) {
         this.begin = begin;
         this.end = end;
+        this.typeOfTokens = TypesOfTokens.PHRASE;
     }
 
     public Phrase(List<Text> phrase, int begin, int end) {
         this(begin, end);
         this.phrase = phrase;
+        this.typeOfTokens = TypesOfTokens.PHRASE;
     }
 
     public Phrase(Text t, int begin, int end) {
         this(begin, end);
         this.phrase.add(t);
+        this.typeOfTokens = TypesOfTokens.PHRASE;
     }
 
     public List<Text> getPhrase() {

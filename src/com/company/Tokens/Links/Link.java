@@ -42,6 +42,7 @@ public class Link extends Token {
             link.src = src;
             link.begin = begin;
             link.end = end;
+            link.typeOfTokens = TypesOfTokens.LINK;
             return link;
         }
 
@@ -59,6 +60,7 @@ public class Link extends Token {
             link.id = id;
             link.begin = begin;
             link.end = end;
+            link.typeOfTokens = TypesOfTokens.LINK;
             return link;
         }
 

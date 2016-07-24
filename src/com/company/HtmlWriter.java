@@ -63,19 +63,19 @@ public class HtmlWriter {
     }
 
     private void writeTokenContainer(TokensContainer tc) {
-        if (tc instanceof Blockquote) {
-            writeBlockquote(((Blockquote) tc));
-            return;
+        switch (tc.getTypeOfContainer()){
+            case BLOCKQUOTE:
+                writeBlockquote(((Blockquote) tc));
+                return;
+            case MARKUP_LIST:
+                writeMarkupList(((MarkupList) tc));
+                return;
+            case PARAGRAPH:
+                writeParagraph(((Paragraph) tc));
+                return;
+            default:
+                throw new IllegalArgumentException("not a container in writeTokenContainer()");
         }
-        if (tc instanceof MarkupList) {
-            writeMarkupList(((MarkupList) tc));
-            return;
-        }
-        if (tc instanceof Paragraph) {
-            writeParagraph(((Paragraph) tc));
-            return;
-        }
-        throw new IllegalArgumentException("not a container in writeTokenContainer()");
     }
 
     private void writeBlockquote(Blockquote blockquote) {
@@ -126,23 +126,22 @@ public class HtmlWriter {
     }
 
     private void writeToken(Token t) {
-        if (t instanceof Link) {
-            printWriter.print("<a href=" + ((Link) t).getSrc() + ">");
-            writePhrase(((Link) t).getText());
-            printWriter.print("</a>");
-            return;
+        switch (t.getTypeOfTokens()){
+            case LINK:
+                printWriter.print("<a href=" + ((Link) t).getSrc() + ">");
+                writePhrase(((Link) t).getText());
+                printWriter.print("</a>");
+                return;
+            case IMAGE:
+                printWriter.print("<img src=\"" + ((Image) t).getSrc() + "\"");
+                printWriter.print(" alt=\"" + ((Image) t).getAltText().getSimpleText() + "\" />");
+                return;
+            case PHRASE:
+                writePhrase(((Phrase) t));
+                return;
+            default:
+                throw new IllegalArgumentException("not a token in writeToken()");
         }
-        if (t instanceof Image) {
-            printWriter.print("<img src=\"" + ((Image) t).getSrc() + "\"");
-            printWriter.print(" alt=\"" + ((Image) t).getAltText().getSimpleText() + "\" />");
-            return;
-        }
-        if (t instanceof Phrase) {
-            writePhrase(((Phrase) t));
-            return;
-        }
-        throw new IllegalArgumentException("not a token in writeToken()");
-
     }
 
     private void writePhrase(Phrase p) {

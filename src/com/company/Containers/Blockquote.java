@@ -3,6 +3,10 @@ package com.company.Containers;
 
 public class Blockquote extends TokensContainer {
 
+    public Blockquote(){
+        this.typeOfContainer = TypesOfContainers.BLOCKQUOTE;
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();

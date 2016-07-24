@@ -1,8 +1,16 @@
 package com.company.Tokens;
 
 public abstract class Token implements Comparable<Token> {
+
+    public enum TypesOfTokens{
+        LINK,
+        IMAGE,
+        PHRASE
+    }
+
     protected int begin;
     protected int end;
+    protected TypesOfTokens typeOfTokens;
 
     public int getBegin() {
         return begin;
@@ -12,11 +20,12 @@ public abstract class Token implements Comparable<Token> {
         return end;
     }
 
+    public TypesOfTokens getTypeOfTokens() {
+        return typeOfTokens;
+    }
+
     @Override
     public int compareTo(Token o) {
-        //return (this.begin - o.begin) > 0 ? 1 : (this.begin - o.begin) < 0 ? -1 : 0;
-        if (this.begin > o.begin) return 1;
-        if (this.begin < o.begin) return -1;
-        return 0;
+        return (this.begin - o.begin) > 0 ? 1 : (this.begin - o.begin) < 0 ? -1 : 0;
     }
 }

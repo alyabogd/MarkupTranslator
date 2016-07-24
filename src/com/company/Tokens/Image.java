@@ -39,6 +39,7 @@ public class Image extends Token{
             image.src = src;
             image.begin = begin;
             image.end = end;
+            image.typeOfTokens = TypesOfTokens.IMAGE;
             return image;
         }
 
@@ -56,6 +57,7 @@ public class Image extends Token{
             image.id = id;
             image.begin = begin;
             image.end = end;
+            image.typeOfTokens = TypesOfTokens.IMAGE;
             return image;
         }
 

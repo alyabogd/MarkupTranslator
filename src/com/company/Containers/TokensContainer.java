@@ -5,6 +5,15 @@ import com.company.Tokens.Token;
 import java.util.*;
 
 public abstract class TokensContainer implements Iterable<Token> {
+
+    public enum TypesOfContainers {
+        BLOCKQUOTE,
+        MARKUP_LIST,
+        PARAGRAPH
+    }
+
+    protected TypesOfContainers typeOfContainer;
+
     protected List<Token> tokens = new ArrayList<>();
 
     public List<Token> getTokens() {
@@ -21,6 +30,10 @@ public abstract class TokensContainer implements Iterable<Token> {
 
     public void sort(){
         Collections.sort(tokens);
+    }
+
+    public TypesOfContainers getTypeOfContainer() {
+        return typeOfContainer;
     }
 
     @Override

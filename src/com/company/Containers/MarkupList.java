@@ -19,6 +19,7 @@ public class MarkupList extends TokensContainer {
 
     public MarkupList(Types t) {
         this.type = t;
+        typeOfContainer = TypesOfContainers.MARKUP_LIST;
     }
 
     @Nullable
