@@ -103,7 +103,7 @@ public class MarkdownReader {
                     applyLinkSpecifiction(ls, dom);
                     continue;
                 }
-                if (dom.getLastElement().getTypeOfContainer() == TokensContainer.TypesOfContainers.MARKUP_LIST) {
+                if (dom.getLastElement()!= null && dom.getLastElement().getTypeOfContainer() == TokensContainer.TypesOfContainers.MARKUP_LIST) {
                     if (((MarkupList) dom.getLastElement()).getLastListElement().getDescription() == null) {
                         ((MarkupList) dom.getLastElement()).getLastListElement().setDescription(tc);
                         continue;
