@@ -41,26 +41,13 @@ public class Text {
     }
 
     public int getHeaderLevel(){ //0 - for non-heading // 1 - 6 for corresponding headers
-        if (state[Properties.HEADER_ONE.ordinal()]){
-            return 1;
-        }
-        if (state[Properties.HEADER_TWO.ordinal()]){
-            return 2;
-        }
-        if (state[Properties.HEADER_THREE.ordinal()]){
-            return 3;
-        }
-        if (state[Properties.HEADER_FOUR.ordinal()]){
-            return 4;
-        }
-        if (state[Properties.HEADER_FIVE.ordinal()]){
-            return 5;
-        }
-        if (state[Properties.HEADER_SIX.ordinal()]){
-            return 6;
+        for(int i = Properties.HEADER_ONE.ordinal(); i < Properties.HEADER_SIX.ordinal(); i++){
+            if (state[i]){
+                return i;
+            }
         }
         return 0;
-    } //?????????
+    }
 
     @Nullable
     public String getWording(){
