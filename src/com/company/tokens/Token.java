@@ -1,4 +1,4 @@
-package com.company.Tokens;
+package com.company.tokens;
 
 public abstract class Token implements Comparable<Token> {
 

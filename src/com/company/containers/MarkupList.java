@@ -1,12 +1,8 @@
-package com.company.Containers;
+package com.company.containers;
 
-import com.company.Tokens.ListElement;
-import com.company.Tokens.Token;
+import com.company.tokens.ListElement;
+import com.company.tokens.Token;
 import com.sun.istack.internal.Nullable;
-
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
 
 public class MarkupList extends TokensContainer {
 

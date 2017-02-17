@@ -1,7 +1,8 @@
 package com.company;
 
-import com.company.Containers.TokensContainer;
+import com.company.containers.TokensContainer;
 import com.sun.istack.internal.Nullable;
+
 
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -10,15 +11,14 @@ import java.util.List;
 public class Dom implements Iterable<TokensContainer> {
 
     private String fileName;
-
     private List<TokensContainer> containers = new LinkedList<>();
+
+    public Dom(String fileName) {
+        this.fileName = fileName;
+    }
 
     public List<TokensContainer> getContainers() {
         return containers;
-    }
-
-    public Dom(String fileName){
-        this.fileName = fileName;
     }
 
     public void addContainer(TokensContainer t) {

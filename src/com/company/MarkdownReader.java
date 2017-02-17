@@ -1,15 +1,15 @@
 package com.company;
 
-import com.company.Containers.Blockquote;
-import com.company.Containers.MarkupList;
-import com.company.Containers.Paragraph;
-import com.company.Containers.TokensContainer;
-import com.company.Tokens.Image;
-import com.company.Tokens.Links.Link;
-import com.company.Tokens.Links.LinkSpecification;
-import com.company.Tokens.ListElement;
-import com.company.Tokens.Phrase;
-import com.company.Tokens.Token;
+import com.company.containers.Blockquote;
+import com.company.containers.MarkupList;
+import com.company.containers.Paragraph;
+import com.company.containers.TokensContainer;
+import com.company.tokens.Image;
+import com.company.tokens.links.Link;
+import com.company.tokens.links.LinkSpecification;
+import com.company.tokens.ListElement;
+import com.company.tokens.Phrase;
+import com.company.tokens.Token;
 
 import java.io.*;
 import java.util.LinkedList;
@@ -48,81 +48,84 @@ public class MarkdownReader {
 
     public Dom makeDom() {
         Dom dom = new Dom(fileName);
-        String s;
+        String line;
         try {
-            while ((s = reader.readLine()) != null) {
-                final Matcher headerOneMatcher = HEADER_ONE_PATTERN.matcher(s);
-                if (headerOneMatcher.matches() && !dom.isEmpty() &&
-                        dom.getLastElement().getTypeOfContainer() == TokensContainer.TypesOfContainers.PARAGRAPH) {
-                    (dom.getLastElement()).getTokens().stream()
-                            .filter(t -> t.getTypeOfTokens() == Token.TypesOfTokens.PHRASE).forEach(t -> {
-                        ((Phrase) t).setHeader(1);
-                    });
+            while ((line = reader.readLine()) != null) {
+                final boolean appliedHeaderOne = tryApplyHeading(dom, HEADER_ONE_PATTERN.matcher(line), 1);
+                if (appliedHeaderOne) {
                     continue;
                 }
 
-                final Matcher headerTwoMatcher = HEADER_TWO_PATTERN.matcher(s);
-                if (headerTwoMatcher.matches() && !dom.isEmpty() &&
-                        dom.getLastElement().getTypeOfContainer() == TokensContainer.TypesOfContainers.PARAGRAPH) {
-                    (dom.getLastElement()).getTokens().stream()
-                            .filter(t -> t.getTypeOfTokens() == Token.TypesOfTokens.PHRASE).forEach(t -> {
-                        ((Phrase) t).setHeader(2);
-                    });
+                final boolean appliedHeaderTwo = tryApplyHeading(dom, HEADER_TWO_PATTERN.matcher(line), 2);
+                if (appliedHeaderTwo) {
                     continue;
                 }
 
-                final Matcher monospaceMatcher = MONOCPACE_PATTERN.matcher(s);
+                final Matcher monospaceMatcher = MONOCPACE_PATTERN.matcher(line);
                 if (monospaceMatcher.matches()) {
                     monospaceGlobal = !monospaceGlobal;
                     continue;
                 }
 
-                final Matcher nonOrderedListMatcher = NON_ORDERED_LIST_ELEMENT_PATTERN.matcher(s);
-                final Matcher orderedListMatcher = ORDERED_LIST_ELEMENT_PATTERN.matcher(s);
-                if (nonOrderedListMatcher.matches()) {
-                    if (!(dom.getLastElement().getTypeOfContainer() == TokensContainer.TypesOfContainers.MARKUP_LIST)) {
-                        dom.addContainer(new MarkupList(MarkupList.Types.NON_ORDERED));
-                    }
-                    if (dom.getLastElement().getTypeOfContainer() == TokensContainer.TypesOfContainers.MARKUP_LIST &&
-                            ((MarkupList) dom.getLastElement()).getType() != MarkupList.Types.NON_ORDERED) {
-                        dom.addContainer(new MarkupList(MarkupList.Types.NON_ORDERED));
-                    }
-                    final ListElement le = new ListElement(traverseString(nonOrderedListMatcher.group(1)));
-                    dom.getLastElement().addToken(le);
+                final boolean appliedNonOrderedList =
+                        tryApplyList(dom, NON_ORDERED_LIST_ELEMENT_PATTERN.matcher(line), MarkupList.Types.NON_ORDERED);
+                if (appliedNonOrderedList) {
                     continue;
                 }
 
-                if (orderedListMatcher.matches()) {
-                    if (!(dom.getLastElement().getTypeOfContainer() == TokensContainer.TypesOfContainers.MARKUP_LIST)) {
-                        dom.addContainer(new MarkupList(MarkupList.Types.ORDERED));
-                    }
-                    if (dom.getLastElement().getTypeOfContainer() == TokensContainer.TypesOfContainers.MARKUP_LIST &&
-                            ((MarkupList) dom.getLastElement()).getType() != MarkupList.Types.ORDERED) {
-                        dom.addContainer(new MarkupList(MarkupList.Types.ORDERED));
-                    }
-                    final ListElement le = new ListElement(traverseString(orderedListMatcher.group(1)));
-                    dom.getLastElement().addToken(le);
+                final boolean appliedOrderedList =
+                        tryApplyList(dom, ORDERED_LIST_ELEMENT_PATTERN.matcher(line), MarkupList.Types.ORDERED);
+                if (appliedOrderedList) {
                     continue;
                 }
 
-                final TokensContainer tc = traverseString(s);
+                final TokensContainer tc = traverseString(line);
                 if (!tc.getTokens().isEmpty() && tc.getTokens().get(0) instanceof LinkSpecification) {
                     final LinkSpecification ls = (LinkSpecification) tc.getTokens().get(0);
                     applyLinkSpecifiction(ls, dom);
                     continue;
                 }
-                if (!dom.isEmpty() && dom.getLastElement().getTypeOfContainer() == TokensContainer.TypesOfContainers.MARKUP_LIST) {
-                    if (((MarkupList) dom.getLastElement()).getLastListElement().getDescription() == null) {
-                        ((MarkupList) dom.getLastElement()).getLastListElement().setDescription(tc);
-                        continue;
-                    }
+
+                if (!dom.isEmpty()
+                        && dom.getLastElement().getTypeOfContainer() == TokensContainer.TypesOfContainers.MARKUP_LIST
+                        && ((MarkupList) dom.getLastElement()).getLastListElement().getDescription() == null) {
+                    ((MarkupList) dom.getLastElement()).getLastListElement().setDescription(tc);
+                    continue;
                 }
+
                 dom.addContainer(tc);
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
         return dom;
+    }
+
+    private boolean tryApplyHeading(Dom dom, Matcher headingMatcher, int headerLevel) {
+        if (headingMatcher.matches() && !dom.isEmpty() &&
+                dom.getLastElement().getTypeOfContainer() == TokensContainer.TypesOfContainers.PARAGRAPH) {
+            (dom.getLastElement()).getTokens().stream()
+                    .filter(t -> t.getTypeOfTokens() == Token.TypesOfTokens.PHRASE)
+                    .forEach(t -> ((Phrase) t).setHeader(headerLevel));
+            return true;
+        }
+        return false;
+    }
+
+    private boolean tryApplyList(Dom dom, Matcher listMatcher, MarkupList.Types typeOfList) {
+        if (listMatcher.matches()) {
+            if (dom.getLastElement().getTypeOfContainer() != TokensContainer.TypesOfContainers.MARKUP_LIST) {
+                dom.addContainer(new MarkupList(typeOfList));
+            }
+            if (dom.getLastElement().getTypeOfContainer() == TokensContainer.TypesOfContainers.MARKUP_LIST &&
+                    ((MarkupList) dom.getLastElement()).getType() != typeOfList) {
+                dom.addContainer(new MarkupList(typeOfList));
+            }
+            final ListElement le = new ListElement(traverseString(listMatcher.group(1)));
+            dom.getLastElement().addToken(le);
+            return true;
+        }
+        return false;
     }
 
     private void applyLinkSpecifiction(LinkSpecification ls, Dom currentDom) {
@@ -217,29 +220,31 @@ public class MarkdownReader {
 
     private TokensContainer traverseString(String line) {
         TokensContainer container;
-        final Matcher BlackquoteMatcher = BLACKQUOTE_PATTERN.matcher(line);
-        if (BlackquoteMatcher.matches()) {
+        final Matcher blackquoteMatcher = BLACKQUOTE_PATTERN.matcher(line);
+        String activeText;
+        if (blackquoteMatcher.matches()) {
             container = new Blockquote();
-            line = BlackquoteMatcher.group(1);
+            activeText = blackquoteMatcher.group(1);
         } else {
             container = new Paragraph();
+            activeText = line;
         }
         int ifHeading = 0; //0 - for non-heading// 1-6 for corresponding headers
-        final Matcher m = HEADINGS_PATTERN.matcher(line);
+        final Matcher m = HEADINGS_PATTERN.matcher(activeText);
         if (m.lookingAt()) {
             ifHeading = m.group(1).length();
-            line = line.substring(ifHeading, line.length());
+            activeText = activeText.substring(ifHeading, activeText.length());
         }
 
-        container.addToken(getLinks(line, ifHeading));
-        container.addToken(getLinkSpecifications(line));
-        container.addToken(getImages(line, ifHeading));
+        container.addToken(getLinks(activeText, ifHeading));
+        container.addToken(getLinkSpecifications(activeText));
+        container.addToken(getImages(activeText, ifHeading));
         container.sort();
 
 
         List<Phrase> phrases = new LinkedList<>();
         for (int i = 1; i < container.getTokens().size(); i++) {
-            final Phrase p = makeText(line.substring(container.getTokens().get(i - 1).getEnd(),
+            final Phrase p = makeText(activeText.substring(container.getTokens().get(i - 1).getEnd(),
                     container.getTokens().get(i).getBegin()), container.getTokens().get(i - 1).getEnd(),
                     container.getTokens().get(i).getBegin());
             p.setHeader(ifHeading);
@@ -249,25 +254,25 @@ public class MarkdownReader {
             }
         }
         if (!container.getTokens().isEmpty() && container.getTokens().get(0).getBegin() != 0) { //first if exist
-            final Phrase t = makeText(line.substring(ifHeading, container.getTokens().get(0).getBegin()),
+            final Phrase t = makeText(activeText.substring(ifHeading, container.getTokens().get(0).getBegin()),
                     ifHeading, container.getTokens().get(0).getBegin());
             t.setHeader(ifHeading);
             phrases.add(t);
         }
 
         if (!container.getTokens().isEmpty() &&
-                container.getTokens().get(container.getTokens().size() - 1).getEnd() < line.length()) { //last if exist
+                container.getTokens().get(container.getTokens().size() - 1).getEnd() < activeText.length()) { //last if exist
             final Phrase t = makeText(
-                    line.substring(container.getTokens().get(container.getTokens().size() - 1).getEnd(),
-                            line.length()), container.getTokens().get(container.getTokens().size() - 1).getEnd(),
-                    line.length());
+                    activeText.substring(container.getTokens().get(container.getTokens().size() - 1).getEnd(),
+                            activeText.length()), container.getTokens().get(container.getTokens().size() - 1).getEnd(),
+                    activeText.length());
             t.setHeader(ifHeading);
             phrases.add(t);
         }
 
-        if (container.getTokens().isEmpty() && line.length() > 0) {
+        if (container.getTokens().isEmpty() && activeText.length() > 0) {
             final Phrase t = makeText(
-                    line.substring(0, line.length()), 0, line.length());
+                    activeText.substring(0, activeText.length()), 0, activeText.length());
             t.setHeader(ifHeading);
             phrases.add(t);
         }
@@ -291,7 +296,7 @@ public class MarkdownReader {
         boolean isMonospace = false;
 
         do {
-            //pointer now is on * or _  or ` or neither. i should check for italics or bold opening or closing
+            //pointer now is on * or _  or ` or neither. i should check for italics or bold: opening or closing
             if (pointer < line.length() && line.charAt(pointer) == '*') {
                 if (pointer + 1 < line.length() && line.charAt(pointer + 1) == '*') { //BOLD case '**'
                     if (isBold && openBold == '*') { //closing
@@ -341,11 +346,11 @@ public class MarkdownReader {
             while (pointer < line.length() && line.charAt(pointer) != '*' && line.charAt(pointer) != '_' &&
                     line.charAt(pointer) != '`') {
                 sb.append(line.charAt(pointer));
-                pointer++; //TODO i think there is a better way to copy text until special symbol rather than do it by char
+                pointer++; // i think there is a better way to copy text until special symbol rather than do it by char
             }
             if (sb.length() > 0) {
                 final Text currentText = new Text("");
-                //TODO not closed previous bracket  like _not italic* italic*
+                //TODO not closed previous bracket like _not italic* italic*
                 if (isBold) {
                     char another = getAnother(openBold);
                     if (pointer == line.length() || (pointer + 1 < line.length() &&

@@ -1,7 +1,7 @@
-package com.company.Tokens;
+package com.company.tokens;
 
 import com.company.Text;
-import com.company.Tokens.Links.LinkSpecification;
+import com.company.tokens.links.LinkSpecification;
 import com.sun.istack.internal.Nullable;
 
 public class Image extends Token{
@@ -9,6 +9,8 @@ public class Image extends Token{
     private Phrase altText;
     private String src;
     private String id; //in case one has a referenced src
+
+    private Image() {}
 
     @Nullable
     public String getSrc() {

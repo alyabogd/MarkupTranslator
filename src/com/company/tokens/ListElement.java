@@ -1,6 +1,6 @@
-package com.company.Tokens;
+package com.company.tokens;
 
-import com.company.Containers.TokensContainer;
+import com.company.containers.TokensContainer;
 import com.sun.istack.internal.Nullable;
 
 

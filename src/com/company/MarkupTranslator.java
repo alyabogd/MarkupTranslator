@@ -1,11 +1,13 @@
 package com.company;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.nio.file.Path;
 
 public class MarkupTranslator {
+
+    private MarkupTranslator() {
+        throw new IllegalAccessError("Utility class");
+    }
 
     public static void translate(File f) {
         try {
@@ -14,11 +16,12 @@ public class MarkupTranslator {
             File parent = new File(f.getParent());
             String outName = f.getName().substring(0, f.getName().length() - 3) + ".html";
             File output = new File(parent, outName);
-            output.createNewFile();
+            boolean isCreated = output.createNewFile();
+            if (!isCreated) {
+                System.err.print("unable to create file");
+            }
             HtmlWriter htmlWriter = new HtmlWriter(output);
             htmlWriter.makeHtml(dom);
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
         }

@@ -1,4 +1,4 @@
-package com.company.Tokens;
+package com.company.tokens;
 
 
 import com.company.Text;
@@ -8,15 +8,15 @@ import java.util.LinkedList;
 import java.util.List;
 
 public class Phrase extends Token implements Iterable<Text> {
-    private List<Text> phrase = new LinkedList<>();
+    private List<Text> texts = new LinkedList<>();
 
     public Phrase(List<Text> l){
-        phrase = l;
+        texts = l;
         this.typeOfTokens = TypesOfTokens.PHRASE;
     }
 
     public Phrase(Text t){
-        phrase.add(t);
+        texts.add(t);
         this.typeOfTokens = TypesOfTokens.PHRASE;
     }
 
@@ -26,28 +26,28 @@ public class Phrase extends Token implements Iterable<Text> {
         this.typeOfTokens = TypesOfTokens.PHRASE;
     }
 
-    public Phrase(List<Text> phrase, int begin, int end) {
+    public Phrase(List<Text> texts, int begin, int end) {
         this(begin, end);
-        this.phrase = phrase;
+        this.texts = texts;
         this.typeOfTokens = TypesOfTokens.PHRASE;
     }
 
     public Phrase(Text t, int begin, int end) {
         this(begin, end);
-        this.phrase.add(t);
+        this.texts.add(t);
         this.typeOfTokens = TypesOfTokens.PHRASE;
     }
 
-    public List<Text> getPhrase() {
-        return phrase;
+    public List<Text> getTexts() {
+        return texts;
     }
 
     public void addText(Text t) {
-        phrase.add(t);
+        texts.add(t);
     }
 
     public void setStyle(Text.Properties style) {
-        for (Text t : phrase) {
+        for (Text t : texts) {
             t.setState(style, true);
         }
     }
@@ -55,7 +55,7 @@ public class Phrase extends Token implements Iterable<Text> {
     public void setHeader(int header) {
         if (header == 0 || header > 6)
             return;
-        for (Text t : phrase) {
+        for (Text t : texts) {
             t.setState(Text.Properties.values()[header], true);
         }
     }
@@ -64,20 +64,20 @@ public class Phrase extends Token implements Iterable<Text> {
 
     public String getSimpleText(){
         StringBuilder sb = new StringBuilder();
-        for (Text t: phrase){
+        for (Text t: texts){
             sb.append(t.getWording()).append(" ");
         }
         return sb.toString();
     }
 
     public boolean isEmpty() {
-        return phrase.isEmpty();
+        return texts.isEmpty();
     }
 
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        for (Text t : phrase) {
+        for (Text t : texts) {
             sb.append(t.toString());
         }
         return sb.toString();
@@ -85,6 +85,6 @@ public class Phrase extends Token implements Iterable<Text> {
 
     @Override
     public Iterator<Text> iterator() {
-        return phrase.iterator();
+        return texts.iterator();
     }
 }

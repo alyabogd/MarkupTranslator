@@ -1,24 +1,31 @@
 package com.company;
 
-import com.company.Containers.Blockquote;
-import com.company.Containers.MarkupList;
-import com.company.Containers.Paragraph;
-import com.company.Containers.TokensContainer;
-import com.company.Tokens.Image;
-import com.company.Tokens.Links.Link;
-import com.company.Tokens.ListElement;
-import com.company.Tokens.Phrase;
-import com.company.Tokens.Token;
+import com.company.containers.Blockquote;
+import com.company.containers.MarkupList;
+import com.company.containers.Paragraph;
+import com.company.containers.TokensContainer;
+import com.company.tokens.Image;
+import com.company.tokens.links.Link;
+import com.company.tokens.ListElement;
+import com.company.tokens.Phrase;
+import com.company.tokens.Token;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
-import java.util.List;
+import java.util.*;
+
+import static com.company.Text.Properties.*;
 
 
 public class HtmlWriter {
 
     private PrintWriter printWriter;
+
+    /*private static final String MONOSPACE = "MONOSPACE";
+    private static final String ITALICS = "ITALICS";
+    private static final String BOLD = "BOLD";*/
+
 
     public HtmlWriter(File file) throws FileNotFoundException {
         printWriter = new PrintWriter(file);
@@ -30,8 +37,8 @@ public class HtmlWriter {
 
 
     public void makeHtml(Dom dom) {
-        /**
-         * <!DOCTYPE html>
+        /*
+         <!DOCTYPE html>
          <html>
          <head>
          <title>Page Title</title>
@@ -63,15 +70,15 @@ public class HtmlWriter {
     }
 
     private void writeTokenContainer(TokensContainer tc) {
-        switch (tc.getTypeOfContainer()){
+        switch (tc.getTypeOfContainer()) {
             case BLOCKQUOTE:
-                writeBlockquote(((Blockquote) tc));
+                writeBlockquote((Blockquote) tc);
                 return;
             case MARKUP_LIST:
-                writeMarkupList(((MarkupList) tc));
+                writeMarkupList((MarkupList) tc);
                 return;
             case PARAGRAPH:
-                writeParagraph(((Paragraph) tc));
+                writeParagraph((Paragraph) tc);
                 return;
             default:
                 throw new IllegalArgumentException("not a container in writeTokenContainer()");
@@ -85,13 +92,10 @@ public class HtmlWriter {
     }
 
     private void writeMarkupList(MarkupList markupList) {
-        switch (markupList.getType()) {
-            case ORDERED:
-                printWriter.println("<ol>");
-                break;
-            case NON_ORDERED:
-                printWriter.println("<ul>");
-                break;
+        if (markupList.getType() == MarkupList.Types.ORDERED) {
+            printWriter.println("<ol>");
+        } else { // MarkupList.Types.NON_ORDERED
+            printWriter.println("<ul>");
         }
 
         for (Token le : markupList) {
@@ -103,13 +107,10 @@ public class HtmlWriter {
                 writeTokenContainer(((ListElement) le).getDescription());
             }
         }
-        switch (markupList.getType()) {
-            case ORDERED:
-                printWriter.println("</ol>");
-                break;
-            case NON_ORDERED:
-                printWriter.println("</ul>");
-                break;
+        if (markupList.getType() == MarkupList.Types.ORDERED) {
+            printWriter.println("</ol>");
+        } else { // MarkupList.Types.NON_ORDERED
+            printWriter.println("</ul>");
         }
     }
 
@@ -126,7 +127,7 @@ public class HtmlWriter {
     }
 
     private void writeToken(Token t) {
-        switch (t.getTypeOfTokens()){
+        switch (t.getTypeOfTokens()) {
             case LINK:
                 printWriter.print("<a href=" + ((Link) t).getSrc() + ">");
                 writePhrase(((Link) t).getText());
@@ -137,51 +138,61 @@ public class HtmlWriter {
                 printWriter.print(" alt=\"" + ((Image) t).getAltText().getSimpleText() + "\" />");
                 return;
             case PHRASE:
-                writePhrase(((Phrase) t));
+                writePhrase((Phrase) t);
                 return;
             default:
                 throw new IllegalArgumentException("not a token in writeToken()");
         }
     }
 
-    private void writePhrase(Phrase p) {
-        for (Text t : p) {
-            final String s;
-            final int level = t.getHeaderLevel();
+    private void writePhrase(Phrase phrase) {
+        for (Text text : phrase) {
+            final String headingLevelTag;
+            final int level = text.getHeaderLevel();
             if (level != 0) {
-                s = "h" + String.valueOf(level);
-                printWriter.print("<" + s + ">");
+                headingLevelTag = "h" + level;
+                printWriter.print("<" + headingLevelTag + ">");
             } else {
-                s = "";
+                headingLevelTag = "";
             }
 
-            if (t.isMonospace()){
-                printWriter.print("<code>");
-            }
-            if (t.isBold()) {
-                printWriter.print("<b>");
-            }
-            if (t.isItalics()) {
-                printWriter.print("<i>");
-            }
+            writeTagsForTextStyle(text, false);
 
-            printWriter.print(t.getWording());
+            printWriter.print(text.getWording());
 
-            if (t.isItalics()) {
-                printWriter.print("</i>");
-            }
-            if (t.isBold()) {
-                printWriter.print("</b>");
-            }
-            if (t.isMonospace()){
-                printWriter.print("</code>");
-            }
+            writeTagsForTextStyle(text, true);
+
             if (level != 0) {
-                printWriter.print("</" + s + ">");
+                printWriter.print("</" + headingLevelTag + ">");
+            }
+        }
+    }
+
+    private void writeTagsForTextStyle(Text text, boolean isClosingTag) {
+        final String modifier = isClosingTag ? "/" : "";
+        final StringBuilder tags = new StringBuilder();
+        // opening: monospace -> bold -> italic
+        final List<Text.Properties> order = new ArrayList<>();
+        order.add(MONOSPACE);
+        order.add(BOLD);
+        order.add(ITALIC);
+
+        if (isClosingTag) {
+            Collections.reverse(order);
+        }
+        for(Text.Properties type: order) {
+            if (type == MONOSPACE && text.isMonospace()) {
+                tags.append("<").append(modifier).append("code>");
+            }
+            if (type == BOLD && text.isBold()) {
+                tags.append("<").append(modifier).append("b>");
+            }
+            if (type == ITALIC && text.isItalics()) {
+                tags.append("<").append(modifier).append("i>");
             }
         }
 
-
+        printWriter.print(tags.toString());
     }
 
 

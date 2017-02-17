@@ -1,6 +1,6 @@
-package com.company.Containers;
+package com.company.containers;
 
-import com.company.Tokens.Token;
+import com.company.tokens.Token;
 
 import java.util.*;
 

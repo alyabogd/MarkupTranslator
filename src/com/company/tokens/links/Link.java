@@ -1,8 +1,8 @@
-package com.company.Tokens.Links;
+package com.company.tokens.links;
 
-import com.company.Tokens.Phrase;
+import com.company.tokens.Phrase;
 import com.company.Text;
-import com.company.Tokens.Token;
+import com.company.tokens.Token;
 import com.sun.istack.internal.Nullable;
 
 import java.util.Collections;
@@ -18,7 +18,9 @@ public class Link extends Token {
     private String src;
     private String id; //in case one is a referenced link
 
-    public void setSrc(LinkSpecification ls) throws IllegalArgumentException {
+    private Link() {}
+
+    public void setSrc(LinkSpecification ls) {
         if (ls.getId().equals(this.id)) {
             this.src = ls.getAdress();
         } else {
@@ -41,6 +43,11 @@ public class Link extends Token {
     }
 
     public static class LinkFactory {
+
+        private LinkFactory() {
+            throw new IllegalAccessError("Utility class");
+        }
+
         public static Link createLink(Phrase text, String src, int begin, int end) {
             Link link = new Link();
             link.text = text;

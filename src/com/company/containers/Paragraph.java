@@ -1,4 +1,4 @@
-package com.company.Containers;
+package com.company.containers;
 
 public class Paragraph extends TokensContainer {
 

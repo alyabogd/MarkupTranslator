@@ -1,6 +1,6 @@
-package com.company.Tokens.Links;
+package com.company.tokens.links;
 
-import com.company.Tokens.Token;
+import com.company.tokens.Token;
 
 public class LinkSpecification extends Token {
     private String id;
