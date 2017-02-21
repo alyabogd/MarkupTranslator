@@ -28,6 +28,10 @@ public class Text {
         //TODO validate input i.e. text cannot be both HEADING_ONE and HEADING_THREE
     }
 
+    public boolean getState(Properties property) {
+        return state[property.ordinal()];
+    }
+
     public boolean isItalics(){
         return state[Properties.ITALIC.ordinal()];
     }

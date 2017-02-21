@@ -12,12 +12,17 @@ import com.company.tokens.Phrase;
 import com.company.tokens.Token;
 
 import java.io.*;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class MarkdownReader {
+
+    private static final Logger LOGGER = Logger.getLogger(MarkdownReader.class.getName());
 
     private static final Pattern HEADINGS_PATTERN = Pattern.compile("^(\\s*#{1,6})\\s*\\w+");
     private static final Pattern INLINE_LINK_PATTERN = Pattern.compile("\\[([^\\]]+)\\]\\(([^\\)]*)\\)");
@@ -31,6 +36,8 @@ public class MarkdownReader {
     private static final Pattern HEADER_ONE_PATTERN = Pattern.compile("={3,100}\\s*");
     private static final Pattern HEADER_TWO_PATTERN = Pattern.compile("-{3,100}\\s*");
     private static final Pattern MONOCPACE_PATTERN = Pattern.compile("`{3,100}\\s*");
+
+    private final MarkdownTextParser markdownTextParser = new MarkdownTextParser();
 
     private BufferedReader reader;
     private String fileName;
@@ -96,7 +103,7 @@ public class MarkdownReader {
                 dom.addContainer(tc);
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, e.toString(), e);
         }
         return dom;
     }
@@ -164,7 +171,7 @@ public class MarkdownReader {
             if (m.start() > 0 && line.charAt(m.start() - 1) == '!') {
                 continue;
             }
-            final Phrase activeText = makeText(m.group(1), m.start(1), m.end(1));
+            final Phrase activeText = markdownTextParser.parse(m.group(1), m.start(1), m.end(1));
             activeText.setHeader(ifHeading);
             final String websiteOrId = m.group(2);
             if (type == Link.TypesOfLinks.INLINE) {
@@ -205,8 +212,7 @@ public class MarkdownReader {
             m = REFERENCED_IMAGE_PATTERN.matcher(line);
         }
         while (m.find()) {
-            final Phrase altText = makeText(m.group(1),
-                    m.start(1), m.end(1));
+            final Phrase altText = markdownTextParser.parse(m.group(1), m.start(1), m.end(1));
             altText.setHeader(ifHeading);
             final String adressOrId = m.group(2);
             if (type == Link.TypesOfLinks.INLINE) {
@@ -242,39 +248,24 @@ public class MarkdownReader {
         container.sort();
 
 
-        List<Phrase> phrases = new LinkedList<>();
-        for (int i = 1; i < container.getTokens().size(); i++) {
-            final Phrase p = makeText(activeText.substring(container.getTokens().get(i - 1).getEnd(),
-                    container.getTokens().get(i).getBegin()), container.getTokens().get(i - 1).getEnd(),
-                    container.getTokens().get(i).getBegin());
-            p.setHeader(ifHeading);
-            if (!p.isEmpty()) {
-                phrases.add(p);
+        List<Phrase> phrases = new ArrayList<>();
+        int beginTextIndex;
+        int endTextIndex;
+        final int tokensNumber = container.getTokens().size();
 
+        for (int i = 0; i <= tokensNumber; ++i) {
+
+            beginTextIndex = (i == 0) ? 0 : container.getTokens().get(i - 1).getEnd();
+            endTextIndex = (i == tokensNumber) ? activeText.length() : container.getTokens().get(i).getBegin();
+
+            if (beginTextIndex == endTextIndex) {
+                continue;
             }
-        }
-        if (!container.getTokens().isEmpty() && container.getTokens().get(0).getBegin() != 0) { //first if exist
-            final Phrase t = makeText(activeText.substring(ifHeading, container.getTokens().get(0).getBegin()),
-                    ifHeading, container.getTokens().get(0).getBegin());
-            t.setHeader(ifHeading);
-            phrases.add(t);
-        }
 
-        if (!container.getTokens().isEmpty() &&
-                container.getTokens().get(container.getTokens().size() - 1).getEnd() < activeText.length()) { //last if exist
-            final Phrase t = makeText(
-                    activeText.substring(container.getTokens().get(container.getTokens().size() - 1).getEnd(),
-                            activeText.length()), container.getTokens().get(container.getTokens().size() - 1).getEnd(),
-                    activeText.length());
-            t.setHeader(ifHeading);
-            phrases.add(t);
-        }
-
-        if (container.getTokens().isEmpty() && activeText.length() > 0) {
-            final Phrase t = makeText(
-                    activeText.substring(0, activeText.length()), 0, activeText.length());
-            t.setHeader(ifHeading);
-            phrases.add(t);
+            final Phrase phrase = markdownTextParser.parse(activeText.substring(beginTextIndex, endTextIndex),
+                    beginTextIndex, endTextIndex);
+            phrase.setHeader(ifHeading);
+            phrases.add(phrase);
         }
 
         container.addToken(phrases);
@@ -282,115 +273,4 @@ public class MarkdownReader {
 
         return container;
     }
-
-    private Phrase makeText(String line, int begin, int end) {
-        Phrase phrase = new Phrase(begin, end);
-        if (line == null || line.length() == 0)
-            return phrase;
-        int pointer = 0;
-
-        boolean isItalics = false;
-        char openItalics = '0';
-        boolean isBold = false;
-        char openBold = '0';
-        boolean isMonospace = false;
-
-        do {
-            //pointer now is on * or _  or ` or neither. i should check for italics or bold: opening or closing
-            if (pointer < line.length() && line.charAt(pointer) == '*') {
-                if (pointer + 1 < line.length() && line.charAt(pointer + 1) == '*') { //BOLD case '**'
-                    if (isBold && openBold == '*') { //closing
-                        isBold = false;
-                    } else { //opening
-                        isBold = true;
-                        openBold = '*';
-                    }
-                    pointer += 2;
-                } else { //ITALICS case '*'
-                    if (isItalics && openItalics == '*') { //closing
-                        isItalics = false;
-                    } else { //opening
-                        isItalics = true;
-                        openItalics = '*';
-                    }
-                    pointer++;
-                }
-            }
-
-            if (pointer < line.length() && line.charAt(pointer) == '_') {
-                if (pointer + 1 < line.length() && line.charAt(pointer + 1) == '_') { //BOLD case '__'
-                    if (isBold && openBold == '_') { //closing
-                        isBold = false;
-                    } else { //opening
-                        isBold = true;
-                        openBold = '_';
-                    }
-                    pointer += 2;
-                } else { //ITALICS case '_'
-                    if (isItalics && openItalics == '_') { //closing
-                        isItalics = false;
-                    } else { //opening
-                        isItalics = true;
-                        openItalics = '_';
-                    }
-                    pointer++;
-                }
-            }
-
-            if (pointer < line.length() && line.charAt(pointer) == '`') {
-                isMonospace = !isMonospace;
-                pointer++;
-            }
-            ////
-            final StringBuilder sb = new StringBuilder();
-            while (pointer < line.length() && line.charAt(pointer) != '*' && line.charAt(pointer) != '_' &&
-                    line.charAt(pointer) != '`') {
-                sb.append(line.charAt(pointer));
-                pointer++; // i think there is a better way to copy text until special symbol rather than do it by char
-            }
-            if (sb.length() > 0) {
-                final Text currentText = new Text("");
-                //TODO not closed previous bracket like _not italic* italic*
-                if (isBold) {
-                    char another = getAnother(openBold);
-                    if (pointer == line.length() || (pointer + 1 < line.length() &&
-                            line.charAt(pointer) == another && line.charAt(pointer + 1) == another)) {
-                        sb.insert(0, openBold);
-                        sb.insert(0, openBold); //because bold (2 times)
-                    } else {
-                        currentText.setState(Text.Properties.BOLD, true);
-                    }
-                }
-                if (isItalics) {
-                    char another = getAnother(openItalics);
-                    if (pointer == line.length() || (pointer < line.length() && line.charAt(pointer) == another)) {
-                        sb.insert(0, openItalics);
-                    } else {
-                        currentText.setState(Text.Properties.ITALIC, true);
-                    }
-                }
-                if (isMonospace) {
-                    if (pointer == line.length()) {
-                        sb.insert(0, '`');
-                    } else {
-                        currentText.setState(Text.Properties.MONOSPACE, true);
-                    }
-                }
-                currentText.setWording(sb.toString());
-                phrase.addText(currentText);
-            }
-        } while (pointer < line.length());
-        if (monospaceGlobal) {
-            phrase.setStyle(Text.Properties.MONOSPACE);
-        }
-        return phrase;
-    }
-
-    private char getAnother(char c){
-        if (c == '*') {
-            return '_';
-        }
-        return '*';
-    }
-
 }

@@ -28,4 +28,24 @@ public abstract class Token implements Comparable<Token> {
     public int compareTo(Token o) {
         return (this.begin - o.begin) > 0 ? 1 : (this.begin - o.begin) < 0 ? -1 : 0;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Token token = (Token) o;
+
+        if (begin != token.begin) return false;
+        if (end != token.end) return false;
+        return typeOfTokens == token.typeOfTokens;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = begin;
+        result = 31 * result + end;
+        result = 31 * result + typeOfTokens.hashCode();
+        return result;
+    }
 }

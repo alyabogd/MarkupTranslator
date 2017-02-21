@@ -2,8 +2,12 @@ package com.company;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class MarkupTranslator {
+
+    private final static Logger LOGGER = Logger.getLogger(MarkupTranslator.class.getName());
 
     private MarkupTranslator() {
         throw new IllegalAccessError("Utility class");
@@ -14,16 +18,16 @@ public class MarkupTranslator {
             MarkdownReader markdownReader = new MarkdownReader(f);
             Dom dom = markdownReader.makeDom();
             File parent = new File(f.getParent());
-            String outName = f.getName().substring(0, f.getName().length() - 3) + ".html";
+            String outName = f.getName().split("\\.")[0] + ".html";
             File output = new File(parent, outName);
             boolean isCreated = output.createNewFile();
             if (!isCreated) {
-                System.err.print("unable to create file");
+                LOGGER.warning("unable to create file");
             }
             HtmlWriter htmlWriter = new HtmlWriter(output);
             htmlWriter.makeHtml(dom);
         } catch (IOException e) {
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, e.toString(), e);
         }
     }
 }
