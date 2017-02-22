@@ -41,7 +41,7 @@ public class MarkdownTextParser {
 
         clean();
 
-        Matcher lineMatcher = LINE_PROCESSOR_PATTERN.matcher(line);
+        final Matcher lineMatcher = LINE_PROCESSOR_PATTERN.matcher(line);
 
         while (lineMatcher.find()) {
             final String wording = lineMatcher.group(1);
@@ -53,46 +53,7 @@ public class MarkdownTextParser {
                 phrase.addText(text);
             }
 
-            switch (operator) {
-                case "**":
-                case "__":
-                    final char boldOpeningSymbol = operator.charAt(0);
-                    if (!isBold) {
-                        isBold = true;
-                        openBold = boldOpeningSymbol;
-                        break;
-                    }
-                    if (isBold && openBold == boldOpeningSymbol) {
-                        isBold = false;
-                        break;
-                    }
-                    // case when bold was opened by opposite symbols
-                    final String boldOperator = String.valueOf(openBold) + openBold;
-                    clearLastTexts(phrase, Text.Properties.BOLD, false, boldOperator);
-                    openBold = boldOpeningSymbol;
-                    break;
-                case "*":
-                case "_":
-                    final char italicOpeningSymbol = operator.charAt(0);
-                    if (!isItalic) {
-                        isItalic = true;
-                        openItalic = italicOpeningSymbol;
-                        break;
-                    }
-                    if (isItalic && openItalic == italicOpeningSymbol) {
-                        isItalic = false;
-                        break;
-                    }
-                    // case when italic was opened by opposite symbols
-                    clearLastTexts(phrase, Text.Properties.ITALIC, false, String.valueOf(openItalic));
-                    openItalic = italicOpeningSymbol;
-                    break;
-                case "`":
-                    isMonospace = !isMonospace;
-                    break;
-                default:
-                    LOGGER.log(Level.WARNING, "pattern recognized inappropriate operator " + operator);
-            }
+            processOperator(operator, phrase);
         }
 
         final Matcher lineTailMatcher = LINE_TAIL_PATTERN.matcher(line);
@@ -105,6 +66,69 @@ public class MarkdownTextParser {
             }
         }
 
+        checkUnclosedStyles(phrase);
+
+        return phrase;
+    }
+
+    private void processOperator(String operator, Phrase phrase) {
+        switch (operator) {
+            case "**":
+            case "__":
+                final char boldOpeningSymbol = operator.charAt(0);
+                applyBoldTag(boldOpeningSymbol, phrase);
+                break;
+            case "*":
+            case "_":
+                final char italicOpeningSymbol = operator.charAt(0);
+                applyItalicTag(italicOpeningSymbol, phrase);
+                break;
+            case "`":
+                isMonospace = !isMonospace;
+                break;
+            default:
+                LOGGER.log(Level.WARNING, "pattern recognized inappropriate operator " + operator);
+        }
+    }
+
+    private void applyBoldTag(char openingSymbol, Phrase phrase) {
+        if (!isBold) {
+            isBold = true;
+            openBold = openingSymbol;
+            return;
+        }
+        if (openBold == openingSymbol) {
+            isBold = false;
+            return;
+        }
+        // case when bold was opened by opposite symbols
+        final String boldOperator = String.valueOf(openBold) + openBold;
+        clearLastTexts(phrase, Text.Properties.BOLD, false, boldOperator);
+        openBold = openingSymbol;
+    }
+
+    private void applyItalicTag(char openingSymbol, Phrase phrase) {
+        if (!isItalic) {
+            isItalic = true;
+            openItalic = openingSymbol;
+            return;
+        }
+        if (openItalic == openingSymbol) {
+            isItalic = false;
+            return;
+        }
+        // case when italic was opened by opposite symbols
+        clearLastTexts(phrase, Text.Properties.ITALIC, false, String.valueOf(openItalic));
+        openItalic = openingSymbol;
+    }
+
+    private void setUpTextStyle(Text text) {
+        text.setState(Text.Properties.BOLD, isBold);
+        text.setState(Text.Properties.ITALIC, isItalic);
+        text.setState(Text.Properties.MONOSPACE, isMonospace);
+    }
+
+    private void checkUnclosedStyles(Phrase phrase) {
         if (isBold) {
             final String operator = String.valueOf(openBold) + openBold;
             clearLastTexts(phrase, Text.Properties.BOLD, false, operator);
@@ -115,13 +139,6 @@ public class MarkdownTextParser {
         if (isMonospace) {
             clearLastTexts(phrase, Text.Properties.MONOSPACE, false, "`");
         }
-        return phrase;
-    }
-
-    private void setUpTextStyle(Text text) {
-        text.setState(Text.Properties.BOLD, isBold);
-        text.setState(Text.Properties.ITALIC, isItalic);
-        text.setState(Text.Properties.MONOSPACE, isMonospace);
     }
 
 

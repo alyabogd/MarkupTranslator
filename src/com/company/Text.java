@@ -1,7 +1,5 @@
 package com.company;
 
-import com.sun.istack.internal.Nullable;
-
 public class Text {
     public enum Properties {
         NONE, //in order to HEADER_ONE.ordinal() == 1 and so on
@@ -25,7 +23,6 @@ public class Text {
 
     public void setState(Properties property, boolean value){
         state[property.ordinal()] = value;
-        //TODO validate input i.e. text cannot be both HEADING_ONE and HEADING_THREE
     }
 
     public boolean getState(Properties property) {
@@ -53,7 +50,6 @@ public class Text {
         return 0;
     }
 
-    @Nullable
     public String getWording(){
         return wording;
     }

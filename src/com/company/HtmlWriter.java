@@ -22,11 +22,6 @@ public class HtmlWriter {
 
     private PrintWriter printWriter;
 
-    /*private static final String MONOSPACE = "MONOSPACE";
-    private static final String ITALICS = "ITALICS";
-    private static final String BOLD = "BOLD";*/
-
-
     public HtmlWriter(File file) throws FileNotFoundException {
         printWriter = new PrintWriter(file);
     }
@@ -37,20 +32,7 @@ public class HtmlWriter {
 
 
     public void makeHtml(Dom dom) {
-        /*
-         <!DOCTYPE html>
-         <html>
-         <head>
-         <title>Page Title</title>
-         </head>
-         <body>
 
-         <h1>My First Heading</h1>
-         <p>My first paragraph.</p>
-
-         </body>
-         </html>
-         */
         printWriter.println("<!DOCTYPE html>");
         printWriter.println("<html>");
         printWriter.println("<head>");
@@ -87,7 +69,9 @@ public class HtmlWriter {
 
     private void writeBlockquote(Blockquote blockquote) {
         printWriter.println("<blockquote>");
-        writeTokens(blockquote.getTokens());
+        for (Token t : blockquote.getTokens()) {
+            writeToken(t);
+        }
         printWriter.println("</blockquote>");
     }
 
@@ -116,14 +100,10 @@ public class HtmlWriter {
 
     private void writeParagraph(Paragraph paragraph) {
         printWriter.print("<p>");
-        writeTokens(paragraph.getTokens());
-        printWriter.println("</p>");
-    }
-
-    private void writeTokens(List<Token> tokens) {
-        for (Token t : tokens) {
+        for (Token t : paragraph.getTokens()) {
             writeToken(t);
         }
+        printWriter.println("</p>");
     }
 
     private void writeToken(Token t) {
@@ -194,6 +174,4 @@ public class HtmlWriter {
 
         printWriter.print(tags.toString());
     }
-
-
 }

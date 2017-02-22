@@ -1,8 +1,6 @@
 package com.company;
 
 import com.company.containers.TokensContainer;
-import com.sun.istack.internal.Nullable;
-
 
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -25,7 +23,6 @@ public class Dom implements Iterable<TokensContainer> {
         containers.add(t);
     }
 
-    @Nullable
     public TokensContainer getLastElement() {
         if (isEmpty()) {
             return null;

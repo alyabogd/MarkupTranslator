@@ -2,7 +2,6 @@ package com.company.containers;
 
 import com.company.tokens.ListElement;
 import com.company.tokens.Token;
-import com.sun.istack.internal.Nullable;
 
 public class MarkupList extends TokensContainer {
 
@@ -18,7 +17,6 @@ public class MarkupList extends TokensContainer {
         typeOfContainer = TypesOfContainers.MARKUP_LIST;
     }
 
-    @Nullable
     public ListElement getLastListElement() {
         if (tokens.isEmpty()) {
             return null;

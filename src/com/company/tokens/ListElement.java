@@ -1,8 +1,6 @@
 package com.company.tokens;
 
 import com.company.containers.TokensContainer;
-import com.sun.istack.internal.Nullable;
-
 
 public class ListElement extends Token {
     private TokensContainer title;
@@ -12,7 +10,6 @@ public class ListElement extends Token {
         this.title = tc;
     }
 
-    @Nullable
     public TokensContainer getDescription() {
         return description;
     }

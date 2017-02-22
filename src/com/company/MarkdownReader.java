@@ -58,54 +58,67 @@ public class MarkdownReader {
         String line;
         try {
             while ((line = reader.readLine()) != null) {
-                final boolean appliedHeaderOne = tryApplyHeading(dom, HEADER_ONE_PATTERN.matcher(line), 1);
-                if (appliedHeaderOne) {
-                    continue;
-                }
-
-                final boolean appliedHeaderTwo = tryApplyHeading(dom, HEADER_TWO_PATTERN.matcher(line), 2);
-                if (appliedHeaderTwo) {
-                    continue;
-                }
-
-                final Matcher monospaceMatcher = MONOCPACE_PATTERN.matcher(line);
-                if (monospaceMatcher.matches()) {
-                    monospaceGlobal = !monospaceGlobal;
-                    continue;
-                }
-
-                final boolean appliedNonOrderedList =
-                        tryApplyList(dom, NON_ORDERED_LIST_ELEMENT_PATTERN.matcher(line), MarkupList.Types.NON_ORDERED);
-                if (appliedNonOrderedList) {
-                    continue;
-                }
-
-                final boolean appliedOrderedList =
-                        tryApplyList(dom, ORDERED_LIST_ELEMENT_PATTERN.matcher(line), MarkupList.Types.ORDERED);
-                if (appliedOrderedList) {
-                    continue;
-                }
-
-                final TokensContainer tc = traverseString(line);
-                if (!tc.getTokens().isEmpty() && tc.getTokens().get(0) instanceof LinkSpecification) {
-                    final LinkSpecification ls = (LinkSpecification) tc.getTokens().get(0);
-                    applyLinkSpecifiction(ls, dom);
-                    continue;
-                }
-
-                if (!dom.isEmpty()
-                        && dom.getLastElement().getTypeOfContainer() == TokensContainer.TypesOfContainers.MARKUP_LIST
-                        && ((MarkupList) dom.getLastElement()).getLastListElement().getDescription() == null) {
-                    ((MarkupList) dom.getLastElement()).getLastListElement().setDescription(tc);
-                    continue;
-                }
-
-                dom.addContainer(tc);
+                processString(dom, line);
             }
         } catch (IOException e) {
             LOGGER.log(Level.SEVERE, e.toString(), e);
         }
         return dom;
+    }
+
+    private void processString(Dom dom, String line) {
+        boolean appliedPattern = tryApplyPatterns(dom, line);
+        if (appliedPattern) {
+            return;
+        }
+
+        final TokensContainer tc = traverseString(line);
+        if (!tc.getTokens().isEmpty() && tc.getTokens().get(0) instanceof LinkSpecification) {
+            final LinkSpecification ls = (LinkSpecification) tc.getTokens().get(0);
+            applyLinkSpecifiction(ls, dom);
+            return;
+        }
+
+        if (!dom.isEmpty()
+                && dom.getLastElement().getTypeOfContainer() == TokensContainer.TypesOfContainers.MARKUP_LIST
+                && ((MarkupList) dom.getLastElement()).getLastListElement().getDescription() == null) {
+            ((MarkupList) dom.getLastElement()).getLastListElement().setDescription(tc);
+            return;
+        }
+
+        dom.addContainer(tc);
+    }
+
+    private boolean tryApplyPatterns(Dom dom, String line) {
+        final boolean appliedHeaderOne = tryApplyHeading(dom, HEADER_ONE_PATTERN.matcher(line), 1);
+        if (appliedHeaderOne) {
+            return true;
+        }
+
+        final boolean appliedHeaderTwo = tryApplyHeading(dom, HEADER_TWO_PATTERN.matcher(line), 2);
+        if (appliedHeaderTwo) {
+            return true;
+        }
+
+        final Matcher monospaceMatcher = MONOCPACE_PATTERN.matcher(line);
+        if (monospaceMatcher.matches()) {
+            monospaceGlobal = !monospaceGlobal;
+            return true;
+        }
+
+        final boolean appliedNonOrderedList =
+                tryApplyList(dom, NON_ORDERED_LIST_ELEMENT_PATTERN.matcher(line), MarkupList.Types.NON_ORDERED);
+        if (appliedNonOrderedList) {
+            return true;
+        }
+
+        final boolean appliedOrderedList =
+                tryApplyList(dom, ORDERED_LIST_ELEMENT_PATTERN.matcher(line), MarkupList.Types.ORDERED);
+        if (appliedOrderedList) {
+            return true;
+        }
+
+        return false;
     }
 
     private boolean tryApplyHeading(Dom dom, Matcher headingMatcher, int headerLevel) {

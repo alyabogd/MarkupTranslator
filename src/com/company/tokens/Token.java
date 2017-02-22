@@ -31,13 +31,21 @@ public abstract class Token implements Comparable<Token> {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
 
         Token token = (Token) o;
 
-        if (begin != token.begin) return false;
-        if (end != token.end) return false;
+        if (begin != token.begin) {
+            return false;
+        }
+        if (end != token.end) {
+            return false;
+        }
         return typeOfTokens == token.typeOfTokens;
     }
 

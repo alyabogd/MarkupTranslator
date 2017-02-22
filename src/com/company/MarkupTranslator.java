@@ -7,7 +7,7 @@ import java.util.logging.Logger;
 
 public class MarkupTranslator {
 
-    private final static Logger LOGGER = Logger.getLogger(MarkupTranslator.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(MarkupTranslator.class.getName());
 
     private MarkupTranslator() {
         throw new IllegalAccessError("Utility class");

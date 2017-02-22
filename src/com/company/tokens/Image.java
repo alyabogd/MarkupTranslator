@@ -2,7 +2,6 @@ package com.company.tokens;
 
 import com.company.Text;
 import com.company.tokens.links.LinkSpecification;
-import com.sun.istack.internal.Nullable;
 
 public class Image extends Token{
 
@@ -12,7 +11,6 @@ public class Image extends Token{
 
     private Image() {}
 
-    @Nullable
     public String getSrc() {
         return src;
     }
@@ -29,12 +27,16 @@ public class Image extends Token{
         return altText;
     }
 
-    @Nullable
     public String getId() {
         return id;
     }
 
     public static class ImageFactory{
+
+        private ImageFactory() {
+            throw new IllegalAccessError("Utility class");
+        }
+
         public static Image createImage(Phrase altText, String src, int begin, int end){
             Image image = new Image();
             image.altText = altText;
